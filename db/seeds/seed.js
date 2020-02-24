@@ -4,21 +4,19 @@ const {topicData, articleData, commentData, userData} = require('../data/index.j
 const { formatDates, formatComments, makeRefObj } = require('../utils/utils');
 
 exports.seed = function(knex) {
-  const topicsInsertions = knex('topics').insert(topicData);
-  const usersInsertions = knex('users').insert(userData);
-
-
+  
+  
   return knex.migrate
-    .rollback()
-    .then(() => knex.migrate.latest())
-    .then(() => {
+  .rollback()
+  .then(() => knex.migrate.latest())
+  .then(() => {
+    const topicsInsertions = knex('topics').insert(topicData);
+    const usersInsertions = knex('users').insert(userData);
 
 
   return Promise.all([topicsInsertions, usersInsertions])
     .then((mystery) => {
-      console.log(mystery)
-      console.log("##First Promise all")
-      //NB1
+      return knex('articles').insert(articleData)
     })
     // .then(articleRows => {
     //   console.log("##Next bit of Promise all")
