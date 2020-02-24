@@ -1,5 +1,7 @@
 exports.formatDates = list => {
-	let listCopy = [...list] // Refactor to also have non-ref copying of the objects inside too.
+	let listCopy = [] // Refactored to have non-ref copying of the objects inside too.
+	list.forEach(item => listCopy.push({...item}))
+	
 	listCopy.forEach(item => {
         item.created_at = new Date(item.created_at)
 	})
@@ -14,12 +16,15 @@ exports.makeRefObj = (arr, param1, param2) => {
 	return referenceObj
 }
 
-//
+/*
+
+ */
 
 
 exports.formatComments = (comments, articleRef) => {;
-	let commentsCopy = [...comments] // Refactor to also have non-ref copying of the objects inside too.
-	
+	let commentsCopy = [] // Refactored to have non-ref copying of the objects inside too.
+	comments.forEach(comment => commentsCopy.push({...comment}))
+
 	for (let i = 0; i < commentsCopy.length; i++){
 	
 	commentsCopy[i].author = commentsCopy[i].created_by;
