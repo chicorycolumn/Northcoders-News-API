@@ -1,6 +1,3 @@
-\c nc_news
+\c nc_news_test
 
-SELECT * FROM users;
 SELECT * FROM articles;
-SELECT * FROM topics;
-SELECT * FROM comments;
