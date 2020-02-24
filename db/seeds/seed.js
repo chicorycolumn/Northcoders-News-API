@@ -3,9 +3,10 @@ const {
   articleData,
   commentData,
   userData
-} = require('../data/index.js');
+} = require('../data/index.js'); // Need make index file I think!
 
 const { formatDates, formatComments, makeRefObj } = require('../utils/utils');
+// Need write these functions!
 
 exports.seed = function(knex) {
   const topicsInsertions = knex('topics').insert(topicData);
