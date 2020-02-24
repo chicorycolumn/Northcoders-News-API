@@ -1,10 +1,10 @@
 const {topicData, articleData, commentData, userData} = require('../data/index.js'); // Have now made index file.
-// Are these actually present in source? Or just testData object?
+// Q: Are these actually present in source? Or just testData object?
+// A: Yes, this works fine, as it turns out.
 
 const { formatDates, formatComments, makeRefObj } = require('../utils/utils');
 
 exports.seed = function(knex) {
-  
   
   return knex.migrate
   .rollback()
@@ -13,10 +13,18 @@ exports.seed = function(knex) {
     const topicsInsertions = knex('topics').insert(topicData);
     const usersInsertions = knex('users').insert(userData);
 
-
   return Promise.all([topicsInsertions, usersInsertions])
-    .then((mystery) => {
-      return knex('articles').insert(articleData)
+    .then(() => {
+      console.log("Have executed Promise.all in Seed file.")
+      
+      articleData.forEach(article => {
+        article.created_at = new Date(article.created_at) // Refactor this to use middleware.
+      })
+
+      console.log("Just after forEach timestamp.")
+
+      return knex('articles').insert(articleData).returning('*')
+      .then(x => console.log(x))
     })
     // .then(articleRows => {
     //   console.log("##Next bit of Promise all")
