@@ -1,13 +1,45 @@
 exports.formatDates = list => {
-    return list.map(comment => comment.created_at = new Date(comment.created_at))
-};
+	let listCopy = [...list] // Refactor to also have non-ref copying of the objects inside too.
+	listCopy.forEach(item => {
+        item.created_at = new Date(item.created_at)
+	})
+	return listCopy
+}
 
-exports.makeRefObj = (list) => {
+exports.makeRefObj = (arr, param1, param2) => {
 	let referenceObj = {}
 	for (let i = 0; i < arr.length; i++){
-		referenceObj[ arr[i][title] ] = arr[i][article_id]
+		referenceObj[ arr[i][param1] ] = arr[i][param2]
 	}
 	return referenceObj
 }
 
-exports.formatComments = (comments, articleRef) => {};
+//
+
+
+exports.formatComments = (comments, articleRef) => {;
+	let commentsCopy = [...comments] // Refactor to also have non-ref copying of the objects inside too.
+	
+	for (let i = 0; i < commentsCopy.length; i++){
+	
+	commentsCopy[i].author = commentsCopy[i].created_by;
+	delete commentsCopy[i].created_by
+	
+	commentsCopy[i].article_id = articleRef[commentsCopy[i].belongs_to];
+	delete commentsCopy[i].belongs_to
+	
+	commentsCopy[i].created_at = new Date(commentsCopy[i].created_at)
+	
+	}
+	
+	return commentsCopy	
+}
+
+// const switchOutKeys = (data, refObj, oldKey, newquay) => {
+// 	let modifiedData = [...data]
+// 	modifiedData.forEach(item => {
+// 		item[newquay] = refObj[item[oldKey]];
+// 		delete item[oldKey];
+// 	})
+// 	return modifiedData
+// 	}

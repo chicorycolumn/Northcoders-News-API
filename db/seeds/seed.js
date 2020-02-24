@@ -5,7 +5,6 @@ const {topicData, articleData, commentData, userData} = require('../data/index.j
 const { formatDates, formatComments, makeRefObj } = require('../utils/utils');
 
 exports.seed = function(knex) {
-  
   return knex.migrate
   .rollback()
   .then(() => knex.migrate.latest())
@@ -16,24 +15,21 @@ exports.seed = function(knex) {
   return Promise.all([topicsInsertions, usersInsertions])
     .then(() => {
       console.log("Have executed Promise.all in Seed file.")
-      
-      articleData.forEach(article => {
-        article.created_at = new Date(article.created_at) // Refactor this to use middleware.
-      })
+
+      const formattedArticleData = formatDates(articleData)
 
       console.log("Just after forEach timestamp.")
 
-      return knex('articles').insert(articleData).returning('*')
-      .then(x => console.log(x))
-    })
-    // .then(articleRows => {
-    //   console.log("##Next bit of Promise all")
-    //   //NB2
-    //   const articleRef = makeRefObj(articleRows);
-    //   const formattedComments = formatComments(commentData, articleRef);
-    //   return knex('comments').insert(formattedComments);
-    // });
+      return knex('articles').insert(formattedArticleData).returning('*')
+      .then((articleDataFromTable) => {
 
+      const articleRef = makeRefObj(articleDataFromTable, 'title', 'article_id')
+
+      const formattedComments = formatComments(commentData, articleRef)
+
+      return knex('comments').insert(formattedComments).returning('*')
+      })
+    })
   })
 };
 

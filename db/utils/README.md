@@ -32,6 +32,24 @@ This utility function should be able to take an array of comment objects (`comme
 
 Each formatted comment must have:
 
+-- CREATE TABLE comments (
+--   comment_id INT PRIMARY KEY,
+--   author VARCHAR(255) REFERENCES users(username) NOT NULL,
+--   article_id INT REFERENCES articles(article_id) NOT NULL,
+--   votes INT DEFAULT 0,
+--   created_at INT DEFAULT Date.now(), --And then will be manipulated..
+--   body VARCHAR(255) NOT NULL
+-- );
+
+  body:
+    "O",
+  belongs_to: "T",
+  created_by: 'b',
+  votes: 16,
+  created_at: 1511354163389,
+
+makeRefObj
+
 - Its `created_by` property renamed to an `author` key
 - Its `belongs_to` property renamed to an `article_id` key
 - The value of the new `article_id` key must be the id corresponding to the original title value provided
