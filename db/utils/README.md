@@ -6,15 +6,15 @@ If you need extra guidance refer back to your schema in the migrations files and
 
 ---
 
-## formatDate
+<!-- ## formatDate
 
 This utility function should be able to take an array (`list`) of objects and return a new array. Each item in the new array must have its timestamp converted into a Javascript date object. Everything else in each item must be maintained.
 
-_hint: Think carefully about how you can test that this has worked - it's not by copying and pasting a sql timestamp from the terminal into your test_
+_hint: Think carefully about how you can test that this has worked - it's not by copying and pasting a sql timestamp from the terminal into your test_ -->
 
 ---
 
-## makeRefObj
+<!-- ## makeRefObj
 
 This utility function should be able to take an array (`list`) of objects and return a reference object. The reference object must be keyed by each item's title, with the values being each item's corresponding id. e.g.
 
@@ -22,7 +22,7 @@ This utility function should be able to take an array (`list`) of objects and re
 
 will become
 
-`{ A: 1 }`
+`{ A: 1 }` -->
 
 ---
 

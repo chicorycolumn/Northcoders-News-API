@@ -1,9 +1,9 @@
 const {
-  topicData,
+  topicData, // Are these actually present in source? Or just testData object?
   articleData,
   commentData,
   userData
-} = require('../data/index.js'); // Need make index file I think!
+} = require('../data/index.js'); // Have now made index file.
 
 const { formatDates, formatComments, makeRefObj } = require('../utils/utils');
 // Need write these functions!
