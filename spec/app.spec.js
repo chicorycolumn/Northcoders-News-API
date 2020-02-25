@@ -80,7 +80,7 @@ describe('/api', () => {
                 expect(res.body.articles[8].comment_count).to.equal(2)
             })      
         })
-        it.only('GET 200 returns an `articles` array sorted by any valid column.', () => {
+        it.only('GET 200 returns an `articles` array sorted by any valid column from articles table.', () => {
             return request(app)
             .get('/api/articles?sort_by=topic')
             .expect(200)
@@ -90,7 +90,17 @@ describe('/api', () => {
                 expect(res.body.articles).to.be.sortedBy('topic', { descending: true })
             })      
         })
-        xit('GET 200 returns an `articles` array sorted by any valid column with order specifiable.', () => {
+        it.only('GET 200 returns an `articles` array sorted by comment_count!', () => {
+            return request(app)
+            .get('/api/articles?sort_by=comment_count')
+            .expect(200)
+            .then(res => {
+                expect(res.body.articles).to.be.an('Array')
+                res.body.articles.forEach(article => expect(article).to.have.all.keys(['author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'comment_count']))
+                expect(res.body.articles).to.be.sortedBy('comment_count', { descending: true })
+            })      
+        })
+        it.only('GET 200 returns an `articles` array sorted by any valid column with order specifiable.', () => {
             return request(app)
             .get('/api/articles?sort_by=votes&order=asc')
             .expect(200)
@@ -98,6 +108,16 @@ describe('/api', () => {
                 expect(res.body.articles).to.be.an('Array')
                 res.body.articles.forEach(article => expect(article).to.have.all.keys(['author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'comment_count']))
                 expect(res.body.articles).to.be.sortedBy('votes', { descending: false })
+            })      
+        })
+        it.only('GET 200 returns an `articles` array sorted by comment_count with order specifiable', () => {
+            return request(app)
+            .get('/api/articles?sort_by=comment_count&order=asc')
+            .expect(200)
+            .then(res => {
+                expect(res.body.articles).to.be.an('Array')
+                res.body.articles.forEach(article => expect(article).to.have.all.keys(['author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'comment_count']))
+                expect(res.body.articles).to.be.sortedBy('comment_count', { descending: false })
             })      
         })
         xit('GET 200 returns an `articles` array filtered by author.', () => {

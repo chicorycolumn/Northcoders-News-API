@@ -1,13 +1,18 @@
 const connection = require('../db/connection')
 
-exports.fetchArticles = ({author, title, article_id, topic, created_at, votes, comment_count}) => {
-    
+exports.fetchArticles = ({sort_by = 'articles.created_at', order = 'desc', author, topic}) => {
+    let sortByCommentCount = false
+    if (sort_by === 'comment_count'){
+        sortByCommentCount = true
+        sort_by = 'articles.created_at'
+    }
+
     return connection('comments')
     .select('*')
     .then(commentsArr => {
         return connection('articles')
         .select('*')
-        .orderBy('articles.created_at', 'desc')
+        .orderBy(sort_by, order)
         .then(articlesArr => {
             articlesArr.forEach(article => {
                 delete article.body
@@ -15,7 +20,17 @@ exports.fetchArticles = ({author, title, article_id, topic, created_at, votes, c
                 commentsArr.filter(comment => comment.article_id === article.article_id).length
 
             })
-            return articlesArr
+
+            if (sortByCommentCount){
+
+                const articlesSortedByComments = [...articlesArr].sort((a, b) => a.comment_count - b.comment_count)
+
+                return order === 'asc' 
+                ? articlesSortedByComments
+                : articlesSortedByComments.reverse()
+            }
+           
+            else return articlesArr
         })
     })
 
