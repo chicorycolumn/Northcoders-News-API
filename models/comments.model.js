@@ -12,10 +12,12 @@ exports.updateCommentVotes = ({comment_id}, {inc_votes}) => {
 //   `{ inc_votes : -100 }` would decrement the current article's vote property by 100
 }
 
-exports.dropComment = ({comment_id}) => { //responds w status 204 and no content
+exports.deleteCommentByID = ({comment_id}) => { //responds w status 204 and no content
     return connection('comments')
         .where({ comment_id: comment_id })
         .del()
+        //.then(x => console.log(x)) //Gives number of rows deleted.
 }
+
 
 
