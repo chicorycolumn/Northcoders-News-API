@@ -39,10 +39,7 @@ describe('/api', () => {
                 expect(res.body.user[0].avatar_url).to.equal('https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png')
             })
         })
-                // **************
-                // Error Handling
-                // **************
-        it('GET 404 returns error if non-existent username.', () => {
+        it('GET 404a returns error if non-existent username.', () => {
             return request(app)
             .get('/api/users/NON_EXISTENT_ID')
             .expect(404)
@@ -68,8 +65,6 @@ describe('/api', () => {
             .get('/api/articles')
             .expect(200)
             .then(res => {
-                console.log("res body articlesssssssssssssssss")
-                console.log(res.body.articles)
                 expect(res.body.articles[0].author).to.equal('butter_bridge')
             })      
         })
@@ -128,7 +123,6 @@ describe('/api', () => {
             .get('/api/articles?author=icellusedkars')
             .expect(200)
             .then(res => {
-                console.log(res.body.articles)
                 expect(res.body.articles).to.be.an('Array')
                 res.body.articles.forEach(article => expect(article).to.have.all.keys(['author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'comment_count']))
                 expect(res.body.articles).to.be.sortedBy('created_at', { descending: true })
@@ -141,8 +135,6 @@ describe('/api', () => {
             .get('/api/articles?topic=mitch')
             .expect(200)
             .then(res => {
-                console.log("*********************")
-                console.log(res.body)
                 expect(res.body.articles).to.be.an('Array')
                 res.body.articles.forEach(article => expect(article).to.have.all.keys(['author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'comment_count']))
                 res.body.articles.forEach(article => expect(article.topic).to.equal('mitch'))
@@ -150,10 +142,7 @@ describe('/api', () => {
                 expect(res.body.articles.length).to.equal(11)
             })      
         })
-                // **************
-                // Error Handling
-                // **************
-        it('GET 404 returns error if nothing matches that ?query.', () => {
+        it('GET 404b returns error if nothing matches that ?query.', () => {
             return request(app)
             .get('/api/articles?topic=NON_EXISTENT_TOPIC')
             .expect(404)
@@ -161,7 +150,7 @@ describe('/api', () => {
                 expect(res.body.msg).to.equal(myErrMsgs['404b'])
             })      
         })
-        it('GET 400 returns error if invalid or nonexistent ?query in url.', () => {
+        it('GET 400c returns error if invalid or nonexistent ?query in url.', () => {
             return request(app)
             .get('/api/articles?topiccccccccccccc=mitch')
             .expect(400)
@@ -190,7 +179,7 @@ describe('/api', () => {
                     expect(res.body.article[0].comment_count).to.equal(13)
                 }) 
             })
-            it('GET 404 if id valid but nonexistent.', () => {
+            it('GET 404a if id valid but nonexistent.', () => {
                 return request(app)
                 .get('/api/articles/6666')
                 .expect(404)
@@ -198,7 +187,7 @@ describe('/api', () => {
                     expect(res.body.msg).to.equal(myErrMsgs['404a'])
                 }) 
             })
-            it('GET 400 if invalid id.', () => {
+            it('GET 400b if invalid id.', () => {
                 return request(app)
                 .get('/api/articles/INVALID_ID')
                 .expect(400)
@@ -209,7 +198,7 @@ describe('/api', () => {
 
             it('PATCH 200 returns updated article with votes incremented according to request body', () => {
                 return request(app)
-                .post('/api/articles/1')
+                .patch('/api/articles/1')
                 .send({ inc_votes: 1000 })
                 .expect(200)
                 .then(res => {
@@ -227,7 +216,7 @@ describe('/api', () => {
             })
             it('PATCH 200 returns updated article with votes decremented according to request body', () => {
                 return request(app)
-                .post('/api/articles/1')
+                .patch('/api/articles/1')
                 .send({ inc_votes: -5100 })
                 .expect(200)
                 .then(res => {
@@ -245,7 +234,7 @@ describe('/api', () => {
             })
             it('PATCH 404a returns error when id valid but no correspond.', () => {
                 return request(app)
-                .post('/api/articles/6666')
+                .patch('/api/articles/6666')
                 .send({ inc_votes: 1000 })
                 .expect(404)
                 .then(res => {
@@ -254,7 +243,7 @@ describe('/api', () => {
             })
             it('PATCH 400b returns error when id invalid.', () => {
                 return request(app)
-                .post('/api/articles/INVALID_ID')
+                .patch('/api/articles/INVALID_ID')
                 .send({ inc_votes: 1000 })
                 .expect(400)
                 .then(res => {
@@ -263,7 +252,7 @@ describe('/api', () => {
             })
             it('PATCH 400a returns error when empty request.', () => {
                 return request(app)
-                .post('/api/articles/1')
+                .patch('/api/articles/1')
                 .send({ })
                 .expect(400)
                 .then(res => {
@@ -272,7 +261,7 @@ describe('/api', () => {
             })
             it('PATCH 400a returns error when key mistyped in request.', () => {
                 return request(app)
-                .post('/api/articles/1')
+                .patch('/api/articles/1')
                 .send({ inc_votesssssssssssssssss: 1000 })
                 .expect(400)
                 .then(res => {
@@ -281,7 +270,7 @@ describe('/api', () => {
             })
             it('PATCH 400aa returns error when value is wrong type in request.', () => {
                 return request(app)
-                .post('/api/articles/1')
+                .patch('/api/articles/1')
                 .send({ inc_votes: 'banana' })
                 .expect(400)
                 .then(res => {
@@ -290,7 +279,7 @@ describe('/api', () => {
             })
             it('PATCH 400a returns error when request contains other values.', () => {
                 return request(app)
-                .post('/api/articles/1')
+                .patch('/api/articles/1')
                 .send({ inc_votes: 5, name: 'Henrietta' })
                 .expect(400)
                 .then(res => {
@@ -334,10 +323,7 @@ describe('/api', () => {
                         expect(res.body.comments).to.be.sortedBy('author', { descending: false })
                     }) 
                 })
-                // **************
-                // Error Handling
-                // **************
-                it('GET 400 if invalid url query.', () => {
+                it('GET 400c if invalid url query.', () => {
                     return request(app)
                     .get('/api/articles/5/comments?sort_by=aaaaaaaaaauthor')
                     .expect(400)
@@ -345,7 +331,7 @@ describe('/api', () => {
                         expect(res.body.msg).to.equal(myErrMsgs['400c'])
                     }) 
                 })
-                it('GET 404 if id valid but nonexistent.', () => {
+                it('GET 404a if id valid but nonexistent.', () => {
                     return request(app)
                     .get('/api/articles/6666/comments?sort_by=author&order=asc')
                     .expect(404)
@@ -353,7 +339,7 @@ describe('/api', () => {
                         expect(res.body.msg).to.equal(myErrMsgs['404a'])
                     }) 
                 })
-                it('GET 400 if invalid id.', () => {
+                it('GET 400b if invalid id.', () => {
                     return request(app)
                     .get('/api/articles/INVALID_ID/comments?sort_by=author&order=asc')
                     .expect(400)
@@ -379,12 +365,7 @@ describe('/api', () => {
                         })
                     })
                 })
-
-                // **************
-                // Error Handling
-                // **************
-
-                it('POST: 400 responds with error when missing fields', () => {
+                it('POST: 400a responds with error when missing fields', () => {
                     return request(app)
                     .post('/api/articles/5/comments')
                         .send({  })
@@ -394,7 +375,7 @@ describe('/api', () => {
                         })
                 });
         
-                it('POST: 400 responds with error failing schema validation', () => {
+                it('POST: 400a responds with error failing schema validation', () => {
                     return request(app)
                     .post('/api/articles/5/comments')
                         .send({usernameeeeeeeeeeeeeeeeee: "Genghis", body: "Not enough pillaging"})
@@ -403,7 +384,7 @@ describe('/api', () => {
                             expect(res.body.msg).to.equal(myErrMsgs['400a'])
                         })
                 });
-                it('POST 404 if id valid but nonexistent.', () => {
+                it('POST 404a if id valid but nonexistent.', () => {
                     return request(app)
                     .post('/api/articles/6666/comments')
                     .send({username: "Genghis", body: "Not enough pillaging"})
@@ -412,7 +393,7 @@ describe('/api', () => {
                         expect(res.body.msg).to.equal(myErrMsgs['404a'])
                     }) 
                 })
-                it('POST 400 if invalid id.', () => {
+                it('POST 400b if invalid id.', () => {
                     return request(app)
                     .post('/api/articles/INVALID_ID/comments')
                     .send({username: "Genghis", body: "Not enough pillaging"})
@@ -421,15 +402,98 @@ describe('/api', () => {
                         expect(res.body.msg).to.equal(myErrMsgs['400b'])
                     }) 
                 })
-                // it('POST 400 if key in body of request is given wrong value type.', () => {
-                //     return request(app)
-                //     .post('/api/articles/5/comments')
-                //     .send({username: "Genghis", body: "Not enough pillaging"})
-                //     .expect(404)
-                //     .then(res => {
-                //         expect(res.body.msg).to.equal(myErrMsgs['404a'])
-                //     }) 
-                // })
+            })
+        })
+    })
+    describe('/comments', () => {
+        describe('/:comment_id', () => {
+            it('PATCH 200 returns updated comment with votes incremented according to request body', () => {
+                return request(app)
+                .patch('/api/comments/2')
+                .send({ inc_votes: 1000 })
+                .expect(200)
+                .then(res => {
+                    delete res.body.comment[0].created_at
+                    expect(res.body.comment[0]).to.eql( {
+                            comment_id: 2,
+                            author: 'butter_bridge',
+                            article_id: 1,
+                            votes: 1014,
+                            //created_at: '2016-11-22T12:36:03.389Z',
+                            body: 'The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.'
+                      } )
+                })
+            })
+            it('PATCH 200 returns updated comment with votes decremented according to request body', () => {
+                return request(app)
+                .patch('/api/comments/2')
+                .send({ inc_votes: -514 })
+                .expect(200)
+                .then(res => {
+                    delete res.body.comment[0].created_at
+                    expect(res.body.comment[0]).to.eql({
+                        comment_id: 2,
+                        author: 'butter_bridge',
+                        article_id: 1,
+                        votes: -500,
+                        //created_at: '2016-11-22T12:36:03.389Z',
+                        body: 'The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.'
+                  })
+                })
+            })
+            it('PATCH 404a returns error when id valid but no correspond.', () => {
+                return request(app)
+                .patch('/api/comments/6666')
+                .send({ inc_votes: 1000 })
+                .expect(404)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['404a'])
+                })
+            })
+            it('PATCH 400b returns error when id invalid.', () => {
+                return request(app)
+                .patch('/api/comments/INVALID_ID')
+                .send({ inc_votes: 1000 })
+                .expect(400)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['400b'])
+                })
+            })
+            it('PATCH 400a returns error when empty request.', () => {
+                return request(app)
+                .patch('/api/comments/1')
+                .send({ })
+                .expect(400)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['400a'])
+                })
+            })
+            it('PATCH 400a returns error when key mistyped in request.', () => {
+                return request(app)
+                .patch('/api/comments/1')
+                .send({ inc_votesssssssssssssssss: 1000 })
+                .expect(400)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['400a'])
+                })
+            })
+            it('PATCH 400aa returns error when value is wrong type in request.', () => {
+                return request(app)
+                .patch('/api/comments/1')
+                .send({ inc_votes: 'banana' })
+                .expect(400)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['400aa'])
+                })
+            })
+            it('PATCH 400a returns error when request contains other values.', () => {
+                return request(app)
+                .patch('/api/comments/1')
+                .send({ inc_votes: 5, name: 'Henrietta' })
+                .expect(400)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['400a'])
+                })
             })
         })
     })

@@ -8,7 +8,7 @@ articlesRouter.route('/')
 
 articlesRouter.route('/:article_id')
     .get(getArticleByID)
-    .post(patchArticleVotes)
+    .patch(patchArticleVotes)
     .all(handle405s)
 
 articlesRouter.route('/:article_id/comments')

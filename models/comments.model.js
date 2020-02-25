@@ -1,14 +1,37 @@
 const connection = require('../db/connection.js')
 
-exports.updateCommentVotes = ({comment_id}, {inc_votes}) => {
+exports.updateCommentVotes = ({comment_id}, requestBody) => {
+    const inc_votes = requestBody.inc_votes
+
+    if (inc_votes === undefined || Object.keys(requestBody).length>1){return Promise.reject({status: 400, customStatus: '400a'})}
     
+    else 
     return connection('comments')
-        .where({ comment_id: comment_id }) // need access keying?
-        .update({votes: votes + parseInt(inc_votes)}) // does this work?
+        .where({ comment_id: comment_id })
+        .increment('votes', inc_votes)
         .returning('*')
-//    This takes an object in the form `{ inc_votes: newVote }`
-//   `{ inc_votes : 1 }` would increment the current article's vote property by 1
-//   `{ inc_votes : -100 }` would decrement the current article's vote property by 100
+        .then(comment => {
+            if (Object.keys(comment).length === 0){return Promise.reject({status: 404, customStatus: '404a'})}
+            else return comment
+        })
+}
+
+exports.updateArticleVotes = ({article_id}, requestBody) => {
+
+    const inc_votes = requestBody.inc_votes
+
+    if (inc_votes === undefined || Object.keys(requestBody).length>1){return Promise.reject({status: 400, customStatus: '400a'})}
+    else 
+    
+    return connection('articles')
+        .where({ article_id: article_id })
+        .increment('votes', inc_votes)
+        //.update('votes', inc_votes + 'votes') // Can this also work?
+        .returning('*')
+        .then(article => {
+            if (Object.keys(article).length === 0){return Promise.reject({status: 404, customStatus: '404a'})}
+            else return article
+        })
 }
 
 exports.deleteCommentByID = ({comment_id}) => { //responds w status 204 and no content

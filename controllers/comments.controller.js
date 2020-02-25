@@ -2,7 +2,7 @@ const { updateCommentVotes, deleteCommentByID } = require('../models/comments.mo
 
 exports.patchCommentVotes = (req, res, next) => {
     updateCommentVotes(req.params, req.body)
-    .then(article => res.send({article}))
+    .then(comment => res.send({comment}))
     .catch(err => next(err))
 }
 
