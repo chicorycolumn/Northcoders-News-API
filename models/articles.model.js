@@ -1,6 +1,8 @@
 const connection = require('../db/connection')
 
-exports.fetchArticles = ({sort_by = 'articles.created_at', order = 'desc', author = '%', topic = '%'}) => {
+exports.fetchArticles = ({sort_by = 'articles.created_at', order = 'desc', author = '%', topic = '%', ...badUrlQueries}) => {
+
+    if (Object.keys(badUrlQueries).length){return Promise.reject({status: 400, customStatus: '400c'})}
 
     let sortByCommentCount = false
     if (sort_by === 'comment_count'){

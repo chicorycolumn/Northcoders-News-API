@@ -5,7 +5,7 @@ exports.fetchUserByUsername = ({username}) => {
     .where({username: username})
     .then(userArray => {
         if (userArray.length === 0){
-            return Promise.reject({status: 404, msg: 'This resource was not found, my friend.'})
+            return Promise.reject({status: 404, customStatus: '404a'})
         } else {
             return userArray
         }

@@ -27,7 +27,8 @@ describe('/api', () => {
             })
         })
     })
-    describe('/users/:username', () => {
+    describe('/users', () => {
+        describe('/:username', () => {
         it('GET 200 returns user by ID, which has username, avatar_url, and name.', () => {
             return request(app)
             .get('/api/users/lurker')
@@ -49,8 +50,8 @@ describe('/api', () => {
                 expect(res.body.msg).to.equal(myErrMsgs["404a"])
             })
         })
+        })
     })
-
     describe('/articles', () => {
         it('GET 200 returns an articles array of article objects, each of which has all the keys, BUT with body key excluded, AND with comment_count key added, sorted by created_at descending default.', () => {
             return request(app)
@@ -160,7 +161,7 @@ describe('/api', () => {
                 expect(res.body.msg).to.equal(myErrMsgs['404b'])
             })      
         })
-        it.only('GET 400 returns error if invalid or nonexistent ?query in url.', () => {
+        it('GET 400 returns error if invalid or nonexistent ?query in url.', () => {
             return request(app)
             .get('/api/articles?topiccccccccccccc=mitch')
             .expect(400)
@@ -205,21 +206,6 @@ describe('/api', () => {
                     expect(res.body.msg).to.equal(myErrMsgs['400b'])
                 }) 
             })
-
-
-        //     an object in the form `{ inc_votes: newVote }`
-
-        //     - `newVote` will indicate how much the `votes` property in the database should be updated by
-          
-        //     e.g.
-          
-        //     `{ inc_votes : 1 }` would increment the current article's vote property by 1
-          
-        //     `{ inc_votes : -100 }` would decrement the current article's vote property by 100
-          
-        //   #### Responds with
-          
-        //   - the updated article
 
             it('PATCH 200 returns updated article with votes incremented according to request body', () => {
                 return request(app)
@@ -448,8 +434,6 @@ describe('/api', () => {
         })
     })
 })
-
-
 
 
 
