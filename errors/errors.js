@@ -4,13 +4,13 @@ exports.pSQLErrorsHandler = (err, req, res, next) => {
         '42703': { status: 400, msg: 'That request was malformed, my friend. You may be missing required fields in your post request, or perhaps your url query is mistyped.' }, // empty obj
         //User tried to filter by a nonexistent column, in the url query.
         
-        '23502': { status: 400, msg: 'nvalid request: Malformed body - missing required fields' }, // null
+        '23502': { status: 400, msg: 'Invalid request, my friend: Malformed body - missing required fields' }, // null
 
         '22P02': { status: 400, msg: 'That was an invalid input, my friend.' } 
         //User entered banana as :article_id .
         
         
-        /* This is for url id of "banana" instead of number, 
+        /* This was for url id of "banana" instead of number, 
         but also for age key in post having value "banana" not number. 
         Is that too broad a category for this message to cover? */
 

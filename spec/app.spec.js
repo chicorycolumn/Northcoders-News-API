@@ -49,15 +49,8 @@ describe('/api', () => {
         })
     })
 
-
-
-
-
-
-
-
-    describe.only('/articles', () => {
-        it('GET 200 returns an `articles` array of article objects, each of which has all the keys, BUT with body key excluded, AND with comment_count key added, sorted by date desc default.', () => {
+    describe('/articles', () => {
+        it('GET 200 returns an articles array of article objects, each of which has all the keys, BUT with body key excluded, AND with comment_count key added, sorted by date desc default.', () => {
             return request(app)
             .get('/api/articles')
             .expect(200)
@@ -141,7 +134,7 @@ describe('/api', () => {
 
 
         describe('/article:id', () => {
-            describe.only('/comments', () => {
+            describe('/comments', () => {
                 it('GET 200 comments by article ID, each of which have all right keys, and are sorted by created_at descending default.', () => {
                     return request(app)
                     .get('/api/articles/5/comments')
@@ -179,14 +172,6 @@ describe('/api', () => {
                 // **************
                 // Error Handling
                 // **************
-                it('GET 400 if invalid id.', () => {
-                    return request(app)
-                    .get('/api/articles/INVALID_ID/comments?sort_by=author&order=asc')
-                    .expect(400)
-                    .then(res => {
-                        expect(res.body.msg).to.equal('That was an invalid input, my friend.')
-                    }) 
-                })
                 it('GET 400 if invalid url query.', () => {
                     return request(app)
                     .get('/api/articles/5/comments?sort_by=aaaaaaaaaauthor')
@@ -203,10 +188,75 @@ describe('/api', () => {
                         expect(res.body.msg).to.equal('This resource was not found, my friend.')
                     }) 
                 })
+                it('GET 400 if invalid id.', () => {
+                    return request(app)
+                    .get('/api/articles/INVALID_ID/comments?sort_by=author&order=asc')
+                    .expect(400)
+                    .then(res => {
+                        expect(res.body.msg).to.equal('That was an invalid input, my friend.')
+                    }) 
+                })
 
-            
-            
-            
+                it.only('POST 201 responds with created comment.', () => {
+                    return request(app)
+                    .post('/api/articles/5/comments')
+                    .send({username: "Genghis", body: "Not enough pillaging"})
+                    .expect(201)
+                    .then(res => {
+                        delete res.body.comment[0].created_at
+                        expect(res.body.comment[0]).to.eql({
+                            comment_id: 19,
+                            author: 'Genghis',
+                            article_id: 5,
+                            votes: 0,
+                            //created_at: '2020-02-25T14:23:37.689Z',
+                            body: 'Not enough pillaging'
+                        })
+                    })
+                })
+
+                // **************
+                // Error Handling
+                // **************
+
+                it.only('POST: 400 responds with error when missing fields', () => {
+                    return request(app)
+                    .post('/api/articles/5/comments')
+                        .send({  })
+                        .expect(400)
+                        .then(res => {
+                            expect(res.body.msg).to.eql('Invalid request, my friend: Malformed body - missing required fields')
+                        })
+                });
+        
+                it.only('POST: 400 responds with error failing schema validation', () => {
+                    return request(app)
+                    .post('/api/articles/5/comments')
+                        .send({usernameeeeeeeeeeeeeeeeee: "Genghis", body: "Not enough pillaging"})
+                        .expect(400)
+                        .then(res => {
+                            expect(res.body.msg).to.equal("That request was malformed, my friend. You may be missing required fields in your post request, or perhaps your url query is mistyped.")
+                            //expect(res.body.msg).to.eql('Invalid request: failing schema validation')
+                        })
+                });
+                it('POST 404 if id valid but nonexistent.', () => {
+                    return request(app)
+                    .post('/api/articles/5/comments')
+                    .send({username: "Genghis", body: "Not enough pillaging"})
+                    .expect(404)
+                    .then(res => {
+                        expect(res.body.msg).to.equal('This resource was not found, my friend.')
+                    }) 
+                })
+                it('POST 400 if invalid id.', () => {
+                    return request(app)
+                    .post('/api/articles/5/comments')
+                    .send({username: "Genghis", body: "Not enough pillaging"})
+                    .expect(400)
+                    .then(res => {
+                        expect(res.body.msg).to.equal('That was an invalid input, my friend.')
+                    }) 
+                })
             })
         })
     })

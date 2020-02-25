@@ -3,32 +3,56 @@ const connection = require('../db/connection')
 exports.fetchArticles = () => {
     
     return connection('articles')
-    .select('*')
+    .select('author', 'title', 'article_id', 'topic', 'created_at', 'votes')
     .then(articlesArray => {
-        let count = articlesArray.length
-        articlesArray.forEach(article => {
-            delete article.body
-        })
-        return articlesArray
-            
-            console.log("Here's the article id from article")
-            console.log(article.article_id)
+        
+        
+        let queriesArr = []
+        let baseQuery = connection.select('*').from('comments')
+        articlesArray.forEach(article => queriesArr.push(baseQuery.where('article_id', article.article_id)))
+        
+        return Promise.all(queriesArr)
+        .then(x => console.log(x))
 
-            return connection('comments')
-            .select('*')
-            .where('article_id', article.article_id)
-            .then(commentsForArticle => {
-                count--
-                //console.log("Here are the comments for this article")
-                //console.log(commentsForArticle)
+        //return articlesArray
+            
+        // return connection
+        // .select('*')
+        // .from('comments')
+        // .where('article_id', 1)
+        // .then(comArr => {console.log(comArr.length)})
+
+        // articlesArray.forEach(article => {
+            
+        //     return Promise.all([article, connection
+        //         .select('*')
+        //         .from('comments')
+        //         .where('article_id', 1)])
+        //         .then(comArr => {
+        //             //article.comment_count = comArr.length
+        //             console.log(comArr.length, article)
+                    
+        //         })
+        // })
+
+            // console.log("Here's the article id from article")
+            // console.log(article.article_id)
+
+            // return connection('comments')
+            // .select('*')
+            // .where('article_id', article.article_id)
+            // .then(commentsForArticle => {
+            //     count--
+            //     //console.log("Here are the comments for this article")
+            //     //console.log(commentsForArticle)
                 
-                article.comment_count = commentsForArticle.length
-                //console.log("************************")
-                //console.log(articlesArray)
-                console.log(count)
+            //     article.comment_count = commentsForArticle.length
+            //     //console.log("************************")
+            //     //console.log(articlesArray)
+            //     console.log(count)
                 
-            })
-            .then(() => {if (count === 0){console.log("zerooooooooooo")}})
+            // })
+            // .then(() => {if (count === 0){console.log("zerooooooooooo")}})
         
         
         
@@ -57,11 +81,12 @@ exports.updateArticleVotes = ({article_id}, {inc_votes}) => {
     
 }
 
-exports.createNewCommentOnArticle = ({article_id}, newComment) => {
+exports.createNewCommentOnArticle = ({article_id}, {username, body}) => {
     
+    console.log(article_id, username, body)
     //Make sure newComment has the article_id inserted.
 
-    return connection.insert(newComment)
+    return connection.insert({article_id: article_id, author: username, body: body})
         .into('comments')
         .returning('*')
 

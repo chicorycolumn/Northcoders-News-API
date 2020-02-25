@@ -16,7 +16,7 @@ exports.patchArticleVotes = (req, res, next) => {
 }
 
 exports.postNewCommentOnArticle = (req, res, next) => {
-    createNewCommentOnArticle(req.params, req.body).then(comment => res.send({comment}))
+    createNewCommentOnArticle(req.params, req.body).then(comment => res.status(201).send({comment}))
     .catch(err => next(err))
 }
 
