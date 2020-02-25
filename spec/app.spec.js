@@ -36,6 +36,9 @@ describe('/api', () => {
                 expect(res.body.user[0].avatar_url).to.equal('https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png')
             })
         })
+                // **************
+                // Error Handling
+                // **************
         it('GET 404 returns error if non-existent username.', () => {
             return request(app)
             .get('/api/users/NON_EXISTENT_ID')
@@ -124,6 +127,9 @@ describe('/api', () => {
                 expect(res.body.articles.length).to.equal(11)
             })      
         })
+                // **************
+                // Error Handling
+                // **************
         it('GET 404 returns error if nothing matches that query.', () => {
             return request(app)
             .get('/api/articles?topic=NON_EXISTENT_TOPIC')
@@ -132,6 +138,7 @@ describe('/api', () => {
                 expect(res.body.msg).to.equal('This resource was not found, my friend.')
             })      
         })
+
 
         describe('/article:id', () => {
             describe.only('/comments', () => {
@@ -155,10 +162,10 @@ describe('/api', () => {
                 })
                 it('GET 200 comments by article ID, sorted by any column, descending default.', () => {
                     return request(app)
-                    .get('/api/articles/5/comments?sort_by=title')
+                    .get('/api/articles/5/comments?sort_by=votes')
                     .expect(200)
                     .then(res => {
-                        expect(res.body.comments).to.be.sortedBy('title', { descending: true })
+                        expect(res.body.comments).to.be.sortedBy('votes', { descending: true })
                     }) 
                 })
                 it('GET 200 comments by article ID, sorted by any column, ascending can be specified.', () => {
@@ -169,6 +176,34 @@ describe('/api', () => {
                         expect(res.body.comments).to.be.sortedBy('author', { descending: false })
                     }) 
                 })
+                // **************
+                // Error Handling
+                // **************
+                it('GET 400 if invalid id.', () => {
+                    return request(app)
+                    .get('/api/articles/INVALID_ID/comments?sort_by=author&order=asc')
+                    .expect(400)
+                    .then(res => {
+                        expect(res.body.msg).to.equal('That was an invalid input, my friend.')
+                    }) 
+                })
+                it('GET 400 if invalid url query.', () => {
+                    return request(app)
+                    .get('/api/articles/5/comments?sort_by=aaaaaaaaaauthor')
+                    .expect(400)
+                    .then(res => {
+                        expect(res.body.msg).to.equal('That request was malformed, my friend. You may be missing required fields in your post request, or perhaps your url query is mistyped.')
+                    }) 
+                })
+                it('GET 404 if id valid but nonexistent.', () => {
+                    return request(app)
+                    .get('/api/articles/6666/comments?sort_by=author&order=asc')
+                    .expect(404)
+                    .then(res => {
+                        expect(res.body.msg).to.equal('This resource was not found, my friend.')
+                    }) 
+                })
+
             
             
             
