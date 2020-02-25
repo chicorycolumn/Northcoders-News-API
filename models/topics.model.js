@@ -1,5 +1,4 @@
-const connection = require('../connection.js') // Is this still the same?
-// Wait, we don't have a connection.js file yet!
+const connection = require('../db/connection.js')
 
 exports.fetchTopics = () => {
     

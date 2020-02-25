@@ -1,6 +1,6 @@
-const { fetchUserByID } = require('../models/users.model')
+const { fetchUserByUsername } = require('../models/users.model')
 
-exports.getUserByID = (req, res, next) => {
-    fetchUserByID(req.params).then(user => res.send({user}))
+exports.getUserByUsername = (req, res, next) => {
+    fetchUserByUsername(req.params).then(user => res.send({user}))
     .catch(err => next(err))
 }

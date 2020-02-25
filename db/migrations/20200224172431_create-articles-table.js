@@ -3,7 +3,7 @@ const users = require('./20200224160012_create-users-table.js')
 
 exports.up = function(knex) {
     
-    console.log("In articles migrator")
+    //console.log("In articles migrator")
 
     return knex.schema.createTable('articles', articleTable => {
         articleTable.increments('article_id').primary()
@@ -14,7 +14,7 @@ exports.up = function(knex) {
         articleTable.string('author').notNullable().references(users.username)
         articleTable.timestamp('created_at').defaultTo(knex.fn.now())
         
-        console.log("Leaving articles migrator")
+        //console.log("Leaving articles migrator")
         
 })};
 

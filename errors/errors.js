@@ -18,7 +18,10 @@ exports.pSQLErrorsHandler = (err, req, res, next) => {
 
 
 exports.handleCustomErrors = (err, req, res, next) => { // handles status, custom erors, that iv'e written
+    console.log("##EH")
+
     if (err.status !== undefined) {
+        console.log("not undef")
         res.status(err.status).send({ msg: err.msg })
     } else next(err)
 }

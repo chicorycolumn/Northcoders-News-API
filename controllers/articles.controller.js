@@ -21,6 +21,6 @@ exports.postNewCommentOnArticle = (req, res, next) => {
 }
 
 exports.getCommentsByArticle = (req, res, next) => {
-    fetchCommentsByArticle(req.params).then(comments => res.send({comments}))
+    fetchCommentsByArticle(req.params, req.query).then(comments => res.send({comments}))
     .catch(err => next(err))
 }

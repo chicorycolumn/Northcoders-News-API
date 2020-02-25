@@ -4,7 +4,7 @@ const articles = require('./20200224172431_create-articles-table.js')
 
 exports.up = function(knex) {
     
-    console.log("In comments migrator")
+    //console.log("In comments migrator")
 
     return knex.schema.createTable('comments', commentTable => {
         commentTable.increments('comment_id').primary()
@@ -14,7 +14,7 @@ exports.up = function(knex) {
         commentTable.timestamp('created_at').defaultTo(knex.fn.now())
         commentTable.string('body').notNullable()
         
-        console.log("Leaving comments migrator")
+        //console.log("Leaving comments migrator")
         
 })};
 

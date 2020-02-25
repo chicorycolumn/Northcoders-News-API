@@ -14,11 +14,11 @@ exports.seed = function(knex) {
 
   return Promise.all([topicsInsertions, usersInsertions])
     .then(() => {
-      console.log("Have executed Promise.all in Seed file.")
+      //console.log("Have executed Promise.all in Seed file.")
 
       const formattedArticleData = formatDates(articleData)
 
-      console.log("Just after forEach timestamp.")
+      //console.log("Just after forEach timestamp.")
 
       return knex('articles').insert(formattedArticleData).returning('*')
       .then((articleDataFromTable) => {

@@ -16,4 +16,4 @@ articlesRouter.route('/:article_id/comments')
     .post(postNewCommentOnArticle)
     .all(handle405s)
 
-module.exports = topicsRouter
+module.exports = articlesRouter
