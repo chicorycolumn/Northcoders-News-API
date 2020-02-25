@@ -1,10 +1,12 @@
 exports.myErrMsgs = {
 
+'400': '400 Bad request: Generic error message.',
 '400a': '400a Bad request: Missing/incorrect fields in body of request, eg POST.',
 '400aa': '400aa Bad request: Re the fields in body of request, likely you entered wrong data type eg {age: "banana"}',
 '400b': '400b Bad request: The url may have an invalid indentifier.',
 '400c': '400c Bad request: At least one query in the url is invalid.',
 
+'404': '404 No such resource: Generic error message.',
 '404a': '404a No such resource: Likely a valid but non-corresponding identifier in the url.',
 '404b': '404b No such resource: Nothing in our database fits your specifications.'
 
@@ -50,12 +52,15 @@ exports.pSQLErrorsHandler = (err, req, res, next) => {
 exports.handleCustomErrors = (err, req, res, next) => { // handles status, custom erors, that iv'e written
 
     if (err.status !== undefined) {
-
-        if (err.status === 404){res.status(404).send({msg: myErrMsgs['404a']})}
         
-        else res.status(err.status).send({ msg: err.msg })
-    
-    } else next(err)
+        if (err.customStatus !== undefined){
+
+            res.status(err.status).send({msg: myErrMsgs[err.customStatus]})
+
+        } 
+        else res.status(err.status).send({ msg: myErrMsgs[err.status] })
+    } 
+    else next(err)
 }
 
 exports.handle405s = (req, res, next) => {

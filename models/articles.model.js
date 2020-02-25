@@ -1,6 +1,7 @@
 const connection = require('../db/connection')
 
-exports.fetchArticles = ({sort_by = 'articles.created_at', order = 'desc', author, topic}) => {
+exports.fetchArticles = ({sort_by = 'articles.created_at', order = 'desc', author = '%', topic = '%'}) => {
+
     let sortByCommentCount = false
     if (sort_by === 'comment_count'){
         sortByCommentCount = true
@@ -12,13 +13,19 @@ exports.fetchArticles = ({sort_by = 'articles.created_at', order = 'desc', autho
     .then(commentsArr => {
         return connection('articles')
         .select('*')
+        .where('topic', 'like', topic)
+        .andWhere('author', 'like', author)
         .orderBy(sort_by, order)
+
         .then(articlesArr => {
+            console.log("*************D*")
+            console.log(articlesArr)
+            if (articlesArr.length === 0){return Promise.reject({status: 404, customStatus: '404b'})}else
+
             articlesArr.forEach(article => {
                 delete article.body
                 article.comment_count = 
                 commentsArr.filter(comment => comment.article_id === article.article_id).length
-
             })
 
             if (sortByCommentCount){
@@ -33,7 +40,7 @@ exports.fetchArticles = ({sort_by = 'articles.created_at', order = 'desc', autho
             else return articlesArr
         })
     })
-
+}
     // return connection('articles')
     // .join('comments', 'articles.article_id', 'comments.article_id')
     // .select('author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'comment_id')
@@ -96,8 +103,7 @@ exports.fetchArticles = ({sort_by = 'articles.created_at', order = 'desc', autho
             // })
             // .then(() => {if (count === 0){console.log("zerooooooooooo")}})       
     // })
-    
-}
+
 
 exports.fetchArticleByID = ({article_id}) => {
 
@@ -111,7 +117,7 @@ exports.fetchArticleByID = ({article_id}) => {
 
         if (Object.keys(article).length === 0){
 
-            return Promise.reject({status: 404})
+            return Promise.reject({status: 404, customStatus: '404a'})
         
         }
         
@@ -124,10 +130,11 @@ exports.fetchArticleByID = ({article_id}) => {
     })
 }
 
-exports.updateArticleVotes = ({article_id}, {inc_votes}) => {
+exports.updateArticleVotes = ({article_id}, requestBody) => {
 
-    if (inc_votes === undefined){return Promise.reject({code: 'my-custom-code-400a'})}
+    const inc_votes = requestBody.inc_votes
 
+    if (inc_votes === undefined || Object.keys(requestBody).length>1){return Promise.reject({status: 400, customStatus: '400a'})}
     else 
     
     return connection('articles')
@@ -136,7 +143,7 @@ exports.updateArticleVotes = ({article_id}, {inc_votes}) => {
         //.update('votes', inc_votes + 'votes') // Can this also work?
         .returning('*')
         .then(article => {
-            if (Object.keys(article).length === 0){return Promise.reject({status: 404})}
+            if (Object.keys(article).length === 0){return Promise.reject({status: 404, customStatus: '404a'})}
             else return article
         })
 }
@@ -148,7 +155,7 @@ exports.createNewCommentOnArticle = ({article_id}, {username, body}) => {
     .from('articles')
     .where('article_id', article_id)
     .then(articlesArr => {
-        if (articlesArr.length === 0){return Promise.reject({status: 404})}
+        if (articlesArr.length === 0){return Promise.reject({status: 404, customStatus: '404a'})}
         else{return articlesArr}
     })
     .then(() => {
@@ -175,7 +182,7 @@ exports.fetchCommentsByArticle = ({article_id}, {sort_by = 'created_at', order =
     .where('article_id', article_id)
     .orderBy(sort_by, order)
     .then(commentsArr => {
-        if (commentsArr.length === 0){return Promise.reject({status: 404})}
+        if (commentsArr.length === 0){return Promise.reject({status: 404, customStatus: '404a'})}
         else{return commentsArr}
     })
 }

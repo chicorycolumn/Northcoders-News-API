@@ -52,7 +52,7 @@ describe('/api', () => {
     })
 
     describe('/articles', () => {
-        it.only('GET 200 returns an articles array of article objects, each of which has all the keys, BUT with body key excluded, AND with comment_count key added, sorted by created_at descending default.', () => {
+        it('GET 200 returns an articles array of article objects, each of which has all the keys, BUT with body key excluded, AND with comment_count key added, sorted by created_at descending default.', () => {
             return request(app)
             .get('/api/articles')
             .expect(200)
@@ -62,15 +62,17 @@ describe('/api', () => {
                 expect(res.body.articles).to.be.sortedBy('created_at', { descending: true })
             })      
         })
-        it.only('GET 200 author is username from the users table.', () => {
+        it('GET 200 author is username from the users table.', () => {
             return request(app)
             .get('/api/articles')
             .expect(200)
             .then(res => {
+                console.log("res body articlesssssssssssssssss")
+                console.log(res.body.articles)
                 expect(res.body.articles[0].author).to.equal('butter_bridge')
             })      
         })
-        it.only('GET 200 comment_count is the total count of all the comments with this article.', () => {
+        it('GET 200 comment_count is the total count of all the comments with this article.', () => {
             return request(app)
             .get('/api/articles')
             .expect(200)
@@ -80,7 +82,7 @@ describe('/api', () => {
                 expect(res.body.articles[8].comment_count).to.equal(2)
             })      
         })
-        it.only('GET 200 returns an `articles` array sorted by any valid column from articles table.', () => {
+        it('GET 200 returns an `articles` array sorted by any valid column from articles table.', () => {
             return request(app)
             .get('/api/articles?sort_by=topic')
             .expect(200)
@@ -90,7 +92,7 @@ describe('/api', () => {
                 expect(res.body.articles).to.be.sortedBy('topic', { descending: true })
             })      
         })
-        it.only('GET 200 returns an `articles` array sorted by comment_count!', () => {
+        it('GET 200 returns an `articles` array sorted by comment_count!', () => {
             return request(app)
             .get('/api/articles?sort_by=comment_count')
             .expect(200)
@@ -100,7 +102,7 @@ describe('/api', () => {
                 expect(res.body.articles).to.be.sortedBy('comment_count', { descending: true })
             })      
         })
-        it.only('GET 200 returns an `articles` array sorted by any valid column with order specifiable.', () => {
+        it('GET 200 returns an `articles` array sorted by any valid column with order specifiable.', () => {
             return request(app)
             .get('/api/articles?sort_by=votes&order=asc')
             .expect(200)
@@ -110,7 +112,7 @@ describe('/api', () => {
                 expect(res.body.articles).to.be.sortedBy('votes', { descending: false })
             })      
         })
-        it.only('GET 200 returns an `articles` array sorted by comment_count with order specifiable', () => {
+        it('GET 200 returns an `articles` array sorted by comment_count with order specifiable', () => {
             return request(app)
             .get('/api/articles?sort_by=comment_count&order=asc')
             .expect(200)
@@ -120,34 +122,37 @@ describe('/api', () => {
                 expect(res.body.articles).to.be.sortedBy('comment_count', { descending: false })
             })      
         })
-        xit('GET 200 returns an `articles` array filtered by author.', () => {
+        it('GET 200 returns an `articles` array filtered by author.', () => {
             return request(app)
             .get('/api/articles?author=icellusedkars')
             .expect(200)
             .then(res => {
+                console.log(res.body.articles)
                 expect(res.body.articles).to.be.an('Array')
                 res.body.articles.forEach(article => expect(article).to.have.all.keys(['author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'comment_count']))
-                expect(res.body.articles).to.be.sortedBy('date', { descending: true })
+                expect(res.body.articles).to.be.sortedBy('created_at', { descending: true })
                 res.body.articles.forEach(article => expect(article.author).to.equal('icellusedkars'))
                 expect(res.body.articles.length).to.equal(6)
             })          
         })
-        xit('GET 200 returns an `articles` array filtered by topic.', () => {
+        it('GET 200 returns an `articles` array filtered by topic.', () => {
             return request(app)
             .get('/api/articles?topic=mitch')
             .expect(200)
             .then(res => {
+                console.log("*********************")
+                console.log(res.body)
                 expect(res.body.articles).to.be.an('Array')
                 res.body.articles.forEach(article => expect(article).to.have.all.keys(['author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'comment_count']))
                 res.body.articles.forEach(article => expect(article.topic).to.equal('mitch'))
-                expect(res.body.articles).to.be.sortedBy('date', { descending: true })
+                expect(res.body.articles).to.be.sortedBy('created_at', { descending: true })
                 expect(res.body.articles.length).to.equal(11)
             })      
         })
                 // **************
                 // Error Handling
                 // **************
-        xit('GET 404 returns error if nothing matches that ?query.', () => {
+        it('GET 404 returns error if nothing matches that ?query.', () => {
             return request(app)
             .get('/api/articles?topic=NON_EXISTENT_TOPIC')
             .expect(404)
@@ -155,9 +160,9 @@ describe('/api', () => {
                 expect(res.body.msg).to.equal(myErrMsgs['404b'])
             })      
         })
-        xit('GET 400 returns error if invalid or nonexistent ?query in url.', () => {
+        it.only('GET 400 returns error if invalid or nonexistent ?query in url.', () => {
             return request(app)
-            .get('/api/articles?topic=NON_EXISTENT_TOPIC')
+            .get('/api/articles?topiccccccccccccc=mitch')
             .expect(400)
             .then(res => {
                 expect(res.body.msg).to.equal(myErrMsgs['400c'])
@@ -295,6 +300,15 @@ describe('/api', () => {
                 .expect(400)
                 .then(res => {
                     expect(res.body.msg).to.equal(myErrMsgs['400aa'])
+                })
+            })
+            it('PATCH 400a returns error when request contains other values.', () => {
+                return request(app)
+                .post('/api/articles/1')
+                .send({ inc_votes: 5, name: 'Henrietta' })
+                .expect(400)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['400a'])
                 })
             })
 
