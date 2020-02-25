@@ -1,12 +1,27 @@
+exports.myErrMsgs = {
+
+'400a': '400a Bad request: Missing/incorrect fields in body of request, eg POST.',
+'400b': '400b Bad request: The url may have an invalid indentifier.',
+'400c': '400c Bad request: At least one query in the url is invalid.',
+
+'404a': '404a No such resource: Likely a valid but non-corresponding identifier in the url.',
+'404b': '404b No such resource: Nothing in our database fits your specifications.'
+
+}
+
+const myErrMsgs = exports.myErrMsgs
+
 exports.pSQLErrorsHandler = (err, req, res, next) => {
     const errCodes = {
 
-        '42703': { status: 400, msg: 'That request was malformed, my friend. You may be missing required fields in your post request, or perhaps your url query is mistyped.' }, // empty obj
+        '42703': { status: 400, msg: myErrMsgs['400c'] }, // empty obj
         //User tried to filter by a nonexistent column, in the url query.
         
-        '23502': { status: 400, msg: 'Invalid request, my friend: Malformed body - missing required fields' }, // null
+        '23502': { status: 400, msg: myErrMsgs['400a'] }, // null
+        //User entered empty object for POST request.
+        //User entered object with wrong keys for POST request.
 
-        '22P02': { status: 400, msg: 'That was an invalid input, my friend.' } 
+        '22P02': { status: 400, msg: myErrMsgs['400b'] } 
         //User entered banana as :article_id .
         
         
@@ -26,7 +41,7 @@ exports.handleCustomErrors = (err, req, res, next) => { // handles status, custo
 
     if (err.status !== undefined) {
 
-        if (err.status === 404){res.status(404).send({msg: 'This resource was not found, my friend.'})}
+        if (err.status === 404){res.status(404).send({msg: myErrMsgs['404a']})}
         
         else res.status(err.status).send({ msg: err.msg })
     

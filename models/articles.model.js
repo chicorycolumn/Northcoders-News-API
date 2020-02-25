@@ -63,8 +63,9 @@ exports.fetchArticles = () => {
 exports.fetchArticleByID = ({article_id}) => {
     
     return connection('articles')
-    .select('*')
+    .select('author', 'title', 'article_id', 'votes', 'body', 'created_at')
     .where('article_id', article_id)
+    .then()
     
 }
 
@@ -82,13 +83,27 @@ exports.updateArticleVotes = ({article_id}, {inc_votes}) => {
 }
 
 exports.createNewCommentOnArticle = ({article_id}, {username, body}) => {
-    
-    console.log(article_id, username, body)
-    //Make sure newComment has the article_id inserted.
 
-    return connection.insert({article_id: article_id, author: username, body: body})
+    return connection
+    .select('*')
+    .from('articles')
+    .where('article_id', article_id)
+    .then(articlesArr => {
+        if (articlesArr.length === 0){return Promise.reject({status: 404})}
+        else{return articlesArr}
+    })
+    .then(() => {
+
+        return connection.insert({article_id: article_id, author: username, body: body})
         .into('comments')
         .returning('*')
+
+    })
+
+    
+    //Make sure newComment has the article_id inserted.
+
+
 
 }
 
