@@ -1,7 +1,7 @@
 const { fetchArticles, fetchArticleByID, updateArticleVotes, createNewCommentOnArticle, fetchCommentsByArticle } = require('../models/articles.model')
 
 exports.getArticles = (req, res, next) => {
-    fetchArticles().then(articles => res.send({articles}))
+    fetchArticles(req.query).then(articles => res.send({articles}))
     .catch(err => next(err))
 }
 

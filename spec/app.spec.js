@@ -52,33 +52,35 @@ describe('/api', () => {
     })
 
     describe('/articles', () => {
-        xit('GET 200 returns an articles array of article objects, each of which has all the keys, BUT with body key excluded, AND with comment_count key added, sorted by date desc default.', () => {
+        it.only('GET 200 returns an articles array of article objects, each of which has all the keys, BUT with body key excluded, AND with comment_count key added, sorted by created_at descending default.', () => {
             return request(app)
             .get('/api/articles')
             .expect(200)
             .then(res => {
                 expect(res.body.articles).to.be.an('Array')
                 res.body.articles.forEach(article => expect(article).to.have.all.keys(['author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'comment_count']))
-                expect(res.body.articles).to.be.sortedBy('date', { descending: true })
+                expect(res.body.articles).to.be.sortedBy('created_at', { descending: true })
             })      
         })
-        xit('GET 200 author is username from the users table.', () => {
+        it.only('GET 200 author is username from the users table.', () => {
             return request(app)
             .get('/api/articles')
             .expect(200)
             .then(res => {
-                expect(res.body.articles[0].author).to.equal('')
+                expect(res.body.articles[0].author).to.equal('butter_bridge')
             })      
         })
-        xit('GET 200 comment_count is the total count of all the comments with this article.', () => {
+        it.only('GET 200 comment_count is the total count of all the comments with this article.', () => {
             return request(app)
             .get('/api/articles')
             .expect(200)
             .then(res => {
-                expect(res.body.articles[0].comment_count).to.equal('')
+                expect(res.body.articles[0].comment_count).to.equal(13)
+                expect(res.body.articles[1].comment_count).to.equal(0)
+                expect(res.body.articles[8].comment_count).to.equal(2)
             })      
         })
-        xit('GET 200 returns an `articles` array sorted by any valid column.', () => {
+        it.only('GET 200 returns an `articles` array sorted by any valid column.', () => {
             return request(app)
             .get('/api/articles?sort_by=topic')
             .expect(200)
@@ -194,7 +196,7 @@ describe('/api', () => {
           
         //   - the updated article
 
-            it.only('PATCH 200 returns updated article with votes incremented according to request body', () => {
+            it('PATCH 200 returns updated article with votes incremented according to request body', () => {
                 return request(app)
                 .post('/api/articles/1')
                 .send({ inc_votes: 1000 })
@@ -212,7 +214,7 @@ describe('/api', () => {
                       })
                 })
             })
-            it.only('PATCH 200 returns updated article with votes decremented according to request body', () => {
+            it('PATCH 200 returns updated article with votes decremented according to request body', () => {
                 return request(app)
                 .post('/api/articles/1')
                 .send({ inc_votes: -5100 })
@@ -230,7 +232,7 @@ describe('/api', () => {
                       })
                 })
             })
-            it.only('PATCH 404a returns error when id valid but no correspond.', () => {
+            it('PATCH 404a returns error when id valid but no correspond.', () => {
                 return request(app)
                 .post('/api/articles/6666')
                 .send({ inc_votes: 1000 })
@@ -239,7 +241,7 @@ describe('/api', () => {
                     expect(res.body.msg).to.equal(myErrMsgs['404a'])
                 })
             })
-            it.only('PATCH 400b returns error when id invalid.', () => {
+            it('PATCH 400b returns error when id invalid.', () => {
                 return request(app)
                 .post('/api/articles/INVALID_ID')
                 .send({ inc_votes: 1000 })
@@ -248,7 +250,7 @@ describe('/api', () => {
                     expect(res.body.msg).to.equal(myErrMsgs['400b'])
                 })
             })
-            it.only('PATCH 400a returns error when empty request.', () => {
+            it('PATCH 400a returns error when empty request.', () => {
                 return request(app)
                 .post('/api/articles/1')
                 .send({ })
@@ -257,7 +259,7 @@ describe('/api', () => {
                     expect(res.body.msg).to.equal(myErrMsgs['400a'])
                 })
             })
-            it.only('PATCH 400a returns error when key mistyped in request.', () => {
+            it('PATCH 400a returns error when key mistyped in request.', () => {
                 return request(app)
                 .post('/api/articles/1')
                 .send({ inc_votesssssssssssssssss: 1000 })
@@ -266,13 +268,13 @@ describe('/api', () => {
                     expect(res.body.msg).to.equal(myErrMsgs['400a'])
                 })
             })
-            it.only('PATCH 400aa returns error when value is wrong type in request.', () => {
+            it('PATCH 400aa returns error when value is wrong type in request.', () => {
                 return request(app)
                 .post('/api/articles/1')
                 .send({ inc_votes: 'banana' })
                 .expect(400)
                 .then(res => {
-                    expect(res.body.msg).to.equal(myErrMsgs['400a'])
+                    expect(res.body.msg).to.equal(myErrMsgs['400aa'])
                 })
             })
 

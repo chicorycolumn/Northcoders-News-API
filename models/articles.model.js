@@ -1,18 +1,45 @@
 const connection = require('../db/connection')
 
-exports.fetchArticles = () => {
+exports.fetchArticles = ({author, title, article_id, topic, created_at, votes, comment_count}) => {
     
-    return connection('articles')
-    .select('author', 'title', 'article_id', 'topic', 'created_at', 'votes')
-    .then(articlesArray => {
+    return connection('comments')
+    .select('*')
+    .then(commentsArr => {
+        return connection('articles')
+        .select('*')
+        .orderBy('articles.created_at', 'desc')
+        .then(articlesArr => {
+            articlesArr.forEach(article => {
+                delete article.body
+                article.comment_count = 
+                commentsArr.filter(comment => comment.article_id === article.article_id).length
+
+            })
+            return articlesArr
+        })
+    })
+
+    // return connection('articles')
+    // .join('comments', 'articles.article_id', 'comments.article_id')
+    // .select('author', 'title', 'article_id', 'topic', 'created_at', 'votes', 'comment_id')
+    // .then(articlesArr => {
+
+    //     articlesArr.forEach(article => {
+    //         article.comment_count = 
+    //     })
+
+    // })
+    
+    
+    // .then(articlesArray => {
         
         
-        let queriesArr = []
-        let baseQuery = connection.select('*').from('comments')
-        articlesArray.forEach(article => queriesArr.push(baseQuery.where('article_id', article.article_id)))
+        // let queriesArr = []
+        // let baseQuery = connection.select('*').from('comments')
+        // articlesArray.forEach(article => queriesArr.push(baseQuery.where('article_id', article.article_id)))
         
-        return Promise.all(queriesArr)
-        .then(x => console.log(x))
+        // return Promise.all(queriesArr)
+        // .then(x => console.log(x))
 
         //return articlesArray
             
@@ -52,11 +79,8 @@ exports.fetchArticles = () => {
             //     console.log(count)
                 
             // })
-            // .then(() => {if (count === 0){console.log("zerooooooooooo")}})
-        
-        
-        
-    })
+            // .then(() => {if (count === 0){console.log("zerooooooooooo")}})       
+    // })
     
 }
 
@@ -87,9 +111,11 @@ exports.fetchArticleByID = ({article_id}) => {
 
 exports.updateArticleVotes = ({article_id}, {inc_votes}) => {
 
-    //if (inc_votes === undefined){return Promise.reject({status: 400})}
+    if (inc_votes === undefined){return Promise.reject({code: 'my-custom-code-400a'})}
 
-    else return connection('articles')
+    else 
+    
+    return connection('articles')
         .where({ article_id: article_id })
         .increment('votes', inc_votes)
         //.update('votes', inc_votes + 'votes') // Can this also work?

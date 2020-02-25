@@ -1,6 +1,7 @@
 exports.myErrMsgs = {
 
 '400a': '400a Bad request: Missing/incorrect fields in body of request, eg POST.',
+'400aa': '400aa Bad request: Re the fields in body of request, likely you entered wrong data type eg {age: "banana"}',
 '400b': '400b Bad request: The url may have an invalid indentifier.',
 '400c': '400c Bad request: At least one query in the url is invalid.',
 
@@ -12,6 +13,11 @@ exports.myErrMsgs = {
 const myErrMsgs = exports.myErrMsgs
 
 exports.pSQLErrorsHandler = (err, req, res, next) => {
+
+    if (err.code === '22P02' && err.toString().split(" ").slice(-1)[0] === '"NaN"'){
+        res.status(400).send({ msg: myErrMsgs['400aa'] })
+    }
+    
     const errCodes = {
 
         '42703': { status: 400, msg: myErrMsgs['400c'] }, // empty obj
@@ -20,7 +26,11 @@ exports.pSQLErrorsHandler = (err, req, res, next) => {
         '23502': { status: 400, msg: myErrMsgs['400a'] }, // null
         //User entered empty object for POST request.
         //User entered object with wrong keys for POST request.
-
+        
+        'my-custom-code-400a': { status: 400, msg: myErrMsgs['400a'] },
+        //User entered empty object for PATCH request.
+        //User entered object with wrong keys for POST request.
+        
         '22P02': { status: 400, msg: myErrMsgs['400b'] } 
         //User entered banana as :article_id .
         
