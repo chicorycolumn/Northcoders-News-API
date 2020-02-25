@@ -77,7 +77,6 @@ exports.updateArticleVotes = ({article_id}, requestBody) => {
     return connection('articles')
         .where({ article_id: article_id })
         .increment('votes', inc_votes)
-        //.update('votes', inc_votes + 'votes') // Can this also work?
         .returning('*')
         .then(article => {
             if (Object.keys(article).length === 0){return Promise.reject({status: 404, customStatus: '404a'})}
@@ -111,8 +110,11 @@ exports.createNewCommentOnArticle = ({article_id}, {username, body}) => {
 }
 
 
-exports.fetchCommentsByArticle = ({article_id}, {sort_by = 'created_at', order = 'desc'}) => {
-    return connection
+exports.fetchCommentsByArticle = ({article_id}, {sort_by = 'created_at', order = 'desc', ...badUrlQueries}) => {
+
+    if (Object.keys(badUrlQueries).length){return Promise.reject({status: 400, customStatus: '400c'})}
+
+    else return connection
     .select('comment_id', 'votes', 'created_at', 'author', 'body')
     .from('comments')
     .where('article_id', article_id)

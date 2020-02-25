@@ -76,7 +76,7 @@ describe('/api', () => {
         })
     })
     describe('/articles', () => {
-        it('GET 200 returns an articles array of article objects, each of which has all the keys, BUT with body key excluded, AND with comment_count key added, sorted by created_at descending default.', () => {
+        it('GET 200 returns an array of article objects, each having all the keys, BUT with body key excluded, AND with comment_count key added, sorted by created_at in descending by default.', () => {
             return request(app)
             .get('/api/articles')
             .expect(200)
@@ -104,7 +104,7 @@ describe('/api', () => {
                 expect(res.body.articles[8].comment_count).to.equal(2)
             })      
         })
-        it('GET 200 returns an `articles` array sorted by any valid column from articles table.', () => {
+        it('GET 200 articles array is sorted by any valid column from articles table.', () => {
             return request(app)
             .get('/api/articles?sort_by=topic')
             .expect(200)
@@ -114,7 +114,7 @@ describe('/api', () => {
                 expect(res.body.articles).to.be.sortedBy('topic', { descending: true })
             })      
         })
-        it('GET 200 returns an `articles` array sorted by comment_count!', () => {
+        it('GET 200 articles array is sorted by the newly-added comment_count property', () => {
             return request(app)
             .get('/api/articles?sort_by=comment_count')
             .expect(200)
@@ -124,7 +124,7 @@ describe('/api', () => {
                 expect(res.body.articles).to.be.sortedBy('comment_count', { descending: true })
             })      
         })
-        it('GET 200 returns an `articles` array sorted by any valid column with order specifiable.', () => {
+        it('GET 200 articles array is sorted by any valid column with order specifiable.', () => {
             return request(app)
             .get('/api/articles?sort_by=votes&order=asc')
             .expect(200)
@@ -134,7 +134,7 @@ describe('/api', () => {
                 expect(res.body.articles).to.be.sortedBy('votes', { descending: false })
             })      
         })
-        it('GET 200 returns an `articles` array sorted by comment_count with order specifiable', () => {
+        it('GET 200 articles array is sorted by comment_count with order specifiable', () => {
             return request(app)
             .get('/api/articles?sort_by=comment_count&order=asc')
             .expect(200)
@@ -144,7 +144,7 @@ describe('/api', () => {
                 expect(res.body.articles).to.be.sortedBy('comment_count', { descending: false })
             })      
         })
-        it('GET 200 returns an `articles` array filtered by author.', () => {
+        it('GET 200 articles array is filtered by author.', () => {
             return request(app)
             .get('/api/articles?author=icellusedkars')
             .expect(200)
@@ -156,7 +156,7 @@ describe('/api', () => {
                 expect(res.body.articles.length).to.equal(6)
             })          
         })
-        it('GET 200 returns an `articles` array filtered by topic.', () => {
+        it('GET 200 articles array is filtered by topic.', () => {
             return request(app)
             .get('/api/articles?topic=mitch')
             .expect(200)
@@ -207,7 +207,6 @@ describe('/api', () => {
         })
 
         describe('/article:id', () => {
-            
             it('GET 200 returns article by id, with the right properties, including comment_count.', () => {
                 return request(app)
                 .get('/api/articles/5')
@@ -248,17 +247,24 @@ describe('/api', () => {
                 .patch('/api/articles/1')
                 .send({ inc_votes: 1000 })
                 .expect(200)
+            
+        //I think testing the exact object might be excessive, so I've trimmed it down to what comes after this chunk.
+                // .then(res => {
+                //     delete res.body.article[0].created_at
+                //     expect(res.body.article[0]).to.eql(  {
+                //         article_id: 1,
+                //         title: 'Living in the shadow of a great man',
+                //         topic: 'mitch',
+                //         author: 'butter_bridge',
+                //         body: 'I find this existence challenging',
+                //         //created_at: 1542284514171,
+                //         votes: 1100,
+                //       })
+                // })
+
                 .then(res => {
-                    delete res.body.article[0].created_at
-                    expect(res.body.article[0]).to.eql(  {
-                        article_id: 1,
-                        title: 'Living in the shadow of a great man',
-                        topic: 'mitch',
-                        author: 'butter_bridge',
-                        body: 'I find this existence challenging',
-                        //created_at: 1542284514171,
-                        votes: 1100,
-                      })
+                    expect(res.body.article[0].votes).to.equal(1100)
+                    expect(res.body.article[0]).to.have.all.keys(['article_id', 'title', 'topic', 'author', 'body', 'created_at', 'votes'])
                 })
             })
             it('PATCH 200 returns updated article with votes decremented according to request body', () => {
@@ -266,17 +272,24 @@ describe('/api', () => {
                 .patch('/api/articles/1')
                 .send({ inc_votes: -5100 })
                 .expect(200)
+                
+                
+    //I think testing the exact object might be excessive, so I've trimmed it down to what comes after this chunk.
+                // .then(res => {
+                //     delete res.body.article[0].created_at
+                //     expect(res.body.article[0]).to.eql(  {
+                //         article_id: 1,
+                //         title: 'Living in the shadow of a great man',
+                //         topic: 'mitch',
+                //         author: 'butter_bridge',
+                //         body: 'I find this existence challenging',
+                //         //created_at: 1542284514171,
+                //         votes: -5000,
+                //       })
+                // })
                 .then(res => {
-                    delete res.body.article[0].created_at
-                    expect(res.body.article[0]).to.eql(  {
-                        article_id: 1,
-                        title: 'Living in the shadow of a great man',
-                        topic: 'mitch',
-                        author: 'butter_bridge',
-                        body: 'I find this existence challenging',
-                        //created_at: 1542284514171,
-                        votes: -5000,
-                      })
+                    expect(res.body.article[0].votes).to.equal(-5000)
+                    expect(res.body.article[0]).to.have.all.keys(['article_id', 'title', 'topic', 'author', 'body', 'created_at', 'votes'])
                 })
             })
             it('PATCH 404a returns error when id valid but no correspond.', () => {
@@ -306,7 +319,7 @@ describe('/api', () => {
                     expect(res.body.msg).to.equal(myErrMsgs['400a'])
                 })
             })
-            it('PATCH 400a returns error when key mistyped in request.', () => {
+            it('PATCH 400a returns error when missing fields, eg key mistyped in request.', () => {
                 return request(app)
                 .patch('/api/articles/1')
                 .send({ inc_votesssssssssssssssss: 1000 })
@@ -315,13 +328,13 @@ describe('/api', () => {
                     expect(res.body.msg).to.equal(myErrMsgs['400a'])
                 })
             })
-            it('PATCH 400aa returns error when value is wrong type in request.', () => {
+            it('PATCH 400d returns error when value is wrong type in request.', () => {
                 return request(app)
                 .patch('/api/articles/1')
                 .send({ inc_votes: 'banana' })
                 .expect(400)
                 .then(res => {
-                    expect(res.body.msg).to.equal(myErrMsgs['400aa'])
+                    expect(res.body.msg).to.equal(myErrMsgs['400d'])
                 })
             })
             it('PATCH 400a returns error when request contains other values.', () => {
@@ -346,9 +359,8 @@ describe('/api', () => {
                 })
             })
 
-            
             describe('/comments', () => {
-                it('GET 200 comments by article ID, each of which have all right keys, and are sorted by created_at descending default.', () => {
+                it('GET 200 comments by article ID, each of which have all right keys, and are sorted by created_at in descending by default.', () => {
                     return request(app)
                     .get('/api/articles/5/comments')
                     .expect(200)
@@ -366,7 +378,7 @@ describe('/api', () => {
                         expect(res.body.comments[0].author).to.equal('icellusedkars')
                     }) 
                 })
-                it('GET 200 comments by article ID, sorted by any column, descending default.', () => {
+                it('GET 200 comments by article ID, sorted by any column, in descending by default.', () => {
                     return request(app)
                     .get('/api/articles/5/comments?sort_by=votes')
                     .expect(200)
@@ -382,9 +394,17 @@ describe('/api', () => {
                         expect(res.body.comments).to.be.sortedBy('author', { descending: false })
                     }) 
                 })
-                it('GET 400c if invalid url query.', () => {
+                it('GET 400c if invalid url query value.', () => {
                     return request(app)
                     .get('/api/articles/5/comments?sort_by=aaaaaaaaaauthor')
+                    .expect(400)
+                    .then(res => {
+                        expect(res.body.msg).to.equal(myErrMsgs['400c'])
+                    }) 
+                })
+                it('GET 400c if invalid url query key.', () => {
+                    return request(app)
+                    .get('/api/articles/5/comments?sort_byyyyyyyyyyy=author')
                     .expect(400)
                     .then(res => {
                         expect(res.body.msg).to.equal(myErrMsgs['400c'])
@@ -412,6 +432,7 @@ describe('/api', () => {
                     .post('/api/articles/5/comments')
                     .send({username: "Genghis", body: "Not enough pillaging"})
                     .expect(201)
+
                     .then(res => {
                         delete res.body.comment[0].created_at
                         expect(res.body.comment[0]).to.eql({
@@ -423,6 +444,13 @@ describe('/api', () => {
                             body: 'Not enough pillaging'
                         })
                     })
+
+    //In case the above then statement is excessive, this below is a more succinct one:
+                    // .then(res => {
+                    //     expect(res.body.comment[0]).to.have.all.keys(['comment_id', 'author', 'article_id', 'votes', 'body', 'created_at'])
+                    //     expect(res.body.comment[0].author).to.equal('Genghis')
+                    //     expect(res.body.comment[0].article_id).to.equal(5)
+                    // })
                 })
                 it('POST: 400a responds with error when missing fields', () => {
                     return request(app)
@@ -434,7 +462,7 @@ describe('/api', () => {
                         })
                 });
         
-                it('POST: 400a responds with error failing schema validation', () => {
+                it('POST: 400a responds with error when failing schema validation', () => {
                     return request(app)
                     .post('/api/articles/5/comments')
                         .send({usernameeeeeeeeeeeeeeeeee: "Genghis", body: "Not enough pillaging"})
@@ -483,17 +511,25 @@ describe('/api', () => {
                 .patch('/api/comments/2')
                 .send({ inc_votes: 1000 })
                 .expect(200)
+
                 .then(res => {
-                    delete res.body.comment[0].created_at
                     expect(res.body.comment[0]).to.eql( {
                             comment_id: 2,
                             author: 'butter_bridge',
                             article_id: 1,
                             votes: 1014,
-                            //created_at: '2016-11-22T12:36:03.389Z',
+                            created_at: '2016-11-22T12:36:03.389Z',
                             body: 'The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.'
                       } )
                 })
+
+    //In case the above then statement is excessive, here below is a more succinct one:
+                // .then(res => {
+                //     expect(res.body.comment[0]).to.have.all.keys(['comment_id', 'author', 'article_id', 'votes', 'created_at', 'body'])
+                //     expect(res.body.comment[0].comment_id).to.equal(2)
+                //     expect(res.body.comment[0].votes).to.equal(1014)
+                // })
+
             })
             it('PATCH 200 returns updated comment with votes decremented according to request body', () => {
                 return request(app)
@@ -501,16 +537,21 @@ describe('/api', () => {
                 .send({ inc_votes: -514 })
                 .expect(200)
                 .then(res => {
-                    delete res.body.comment[0].created_at
                     expect(res.body.comment[0]).to.eql({
                         comment_id: 2,
                         author: 'butter_bridge',
                         article_id: 1,
                         votes: -500,
-                        //created_at: '2016-11-22T12:36:03.389Z',
                         body: 'The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.'
                   })
                 })
+
+    //In case the above then statement is excessive, here below is a more succinct one:
+                // .then(res => {
+                //     expect(res.body.comment[0]).to.have.all.keys(['comment_id', 'author', 'article_id', 'votes', 'created_at', 'body'])
+                //     expect(res.body.comment[0].comment_id).to.equal(2)
+                //     expect(res.body.comment[0].votes).to.equal(-500)
+                // })
             })
             it('PATCH 404a returns error when id valid but no correspond.', () => {
                 return request(app)
@@ -539,7 +580,7 @@ describe('/api', () => {
                     expect(res.body.msg).to.equal(myErrMsgs['400a'])
                 })
             })
-            it('PATCH 400a returns error when key mistyped in request.', () => {
+            it('PATCH 400a returns error when fields missing in request, eg mistyped keys.', () => {
                 return request(app)
                 .patch('/api/comments/1')
                 .send({ inc_votesssssssssssssssss: 1000 })
@@ -548,13 +589,13 @@ describe('/api', () => {
                     expect(res.body.msg).to.equal(myErrMsgs['400a'])
                 })
             })
-            it('PATCH 400aa returns error when value is wrong type in request.', () => {
+            it('PATCH 400d returns error when value is wrong type in request.', () => {
                 return request(app)
                 .patch('/api/comments/1')
                 .send({ inc_votes: 'banana' })
                 .expect(400)
                 .then(res => {
-                    expect(res.body.msg).to.equal(myErrMsgs['400aa'])
+                    expect(res.body.msg).to.equal(myErrMsgs['400d'])
                 })
             })
             it('PATCH 400a returns error when request contains other values.', () => {
@@ -575,13 +616,13 @@ describe('/api', () => {
                     expect(res.body).to.eql({})
                 })
             })
-            it('DELETE 204 - It was... definitely deleted, right?', () => {
+            it('DELETE 204   It was... definitely deleted, right?', () => {
                 return request(app)
                 .del('/api/comments/4')
                 .expect(204)
                 .then(res => {
                     return request(app)
-                    .patch('/api/comments/6666')
+                    .patch('/api/comments/4')
                     .send({ inc_votes: 1000 })
                     .expect(404)
                     .then(res => {
@@ -620,42 +661,3 @@ describe('/api', () => {
         })
     })
 })
-
-
-
-
-
-
-// .expect(405)
-// .then(res => {
-//     expect(res.body.msg).to.equal(myErrMsgs['405'])
-    
-// })
-
-
-
-
-
-
-
-
-
-
-
-
-
-// - an `articles` array of article objects, each of which should have the following properties:
-//   - `author` which is the `username` from the users table
-//   - `title`
-//   - `article_id`
-//   - `topic`
-//   - `created_at`
-//   - `votes`
-//   - `comment_count` which is the total count of all the comments with this article_id - you should make use of knex queries in order to achieve this
-
-// #### Should accept queries
-
-// - `sort_by`, which sorts the articles by any valid column (defaults to date)
-// - `order`, which can be set to `asc` or `desc` for ascending or descending (defaults to descending)
-// - `author`, which filters the articles by the username value specified in the query
-// - `topic`, which filters the articles by the topic value specified in the query
