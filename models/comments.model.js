@@ -38,6 +38,10 @@ exports.deleteCommentByID = ({comment_id}) => { //responds w status 204 and no c
     return connection('comments')
         .where({ comment_id: comment_id })
         .del()
+        .then(numberRowsDeleted => {
+            if (numberRowsDeleted === 0){return Promise.reject({status: 404, customStatus: '404a'})}
+            else return numberRowsDeleted
+        })
         //.then(x => console.log(x)) //Gives number of rows deleted.
 }
 

@@ -8,6 +8,6 @@ exports.patchCommentVotes = (req, res, next) => {
 
 exports.dropCommentByID = (req, res, next) => {
     deleteCommentByID(req.params)
-    .then(x => res.status(204).send(x))
+    .then(() => {res.status(204).send()})
     .catch(err => next(err))
 }

@@ -26,6 +26,19 @@ describe('/api', () => {
                 res.body.topics.forEach(topic => expect(topic).to.have.all.keys(['slug', 'description']))
             })
         })
+        it('Responds 405 if any other methods are used at this endpoint', () => {
+            const url = '/api/topics'
+            return Promise.all([
+                request(app).del(url),
+                request(app).patch(url),
+                request(app).post(url)
+            ]).then(resArr => {
+                resArr.forEach(response => {
+                    expect(405)
+                    expect(response.body.msg).to.equal(myErrMsgs['405'])
+                })
+            })
+        })
     })
     describe('/users', () => {
         describe('/:username', () => {
@@ -47,6 +60,19 @@ describe('/api', () => {
                 expect(res.body.msg).to.equal(myErrMsgs["404a"])
             })
         })
+        })
+        it('Responds 405 if any other methods are used at this endpoint', () => {
+            const url = '/api/users/:username'
+            return Promise.all([
+                request(app).del(url),
+                request(app).patch(url),
+                request(app).post(url)
+            ]).then(resArr => {
+                resArr.forEach(response => {
+                    expect(405)
+                    expect(response.body.msg).to.equal(myErrMsgs['405'])
+                })
+            })
         })
     })
     describe('/articles', () => {
@@ -150,6 +176,14 @@ describe('/api', () => {
                 expect(res.body.msg).to.equal(myErrMsgs['404b'])
             })      
         })
+        it('GET 404b returns error if, say the author specified in the query does indeed exist in the database, but no articles are associated with them.', () => {
+            return request(app)
+            .get('/api/articles?author=lurker')
+            .expect(404)
+            .then(res => {
+                expect(res.body.msg).to.equal(myErrMsgs['404b'])
+            })      
+        })
         it('GET 400c returns error if invalid or nonexistent ?query in url.', () => {
             return request(app)
             .get('/api/articles?topiccccccccccccc=mitch')
@@ -157,6 +191,19 @@ describe('/api', () => {
             .then(res => {
                 expect(res.body.msg).to.equal(myErrMsgs['400c'])
             })      
+        })
+        it('Responds 405 if any other methods are used at this endpoint', () => {
+            const url = '/api/articles'
+            return Promise.all([
+                request(app).del(url),
+                request(app).patch(url),
+                request(app).post(url)
+            ]).then(resArr => {
+                resArr.forEach(response => {
+                    expect(405)
+                    expect(response.body.msg).to.equal(myErrMsgs['405'])
+                })
+            })
         })
 
         describe('/article:id', () => {
@@ -286,6 +333,18 @@ describe('/api', () => {
                     expect(res.body.msg).to.equal(myErrMsgs['400a'])
                 })
             })
+            it('Responds 405 if any other methods are used at this endpoint', () => {
+                const url = '/api/articles/3'
+                return Promise.all([
+                    request(app).del(url),
+                    request(app).post(url)
+                ]).then(resArr => {
+                    resArr.forEach(response => {
+                        expect(405)
+                        expect(response.body.msg).to.equal(myErrMsgs['405'])
+                    })
+                })
+            })
 
             
             describe('/comments', () => {
@@ -402,6 +461,18 @@ describe('/api', () => {
                         expect(res.body.msg).to.equal(myErrMsgs['400b'])
                     }) 
                 })
+                it('Responds 405 if any other methods are used at this endpoint', () => {
+                    const url = '/api/articles/4/comments'
+                    return Promise.all([
+                        request(app).del(url),
+                        request(app).patch(url)
+                    ]).then(resArr => {
+                        resArr.forEach(response => {
+                            expect(405)
+                            expect(response.body.msg).to.equal(myErrMsgs['405'])
+                        })
+                    })
+                })
             })
         })
     })
@@ -495,12 +566,71 @@ describe('/api', () => {
                     expect(res.body.msg).to.equal(myErrMsgs['400a'])
                 })
             })
+        
+            it('DELETE 204 returns no body after sucessful deletion', () => {
+                return request(app)
+                .del('/api/comments/3')
+                .expect(204)
+                .then(res => {
+                    expect(res.body).to.eql({})
+                })
+            })
+            it('DELETE 204 - It was... definitely deleted, right?', () => {
+                return request(app)
+                .del('/api/comments/4')
+                .expect(204)
+                .then(res => {
+                    return request(app)
+                    .patch('/api/comments/6666')
+                    .send({ inc_votes: 1000 })
+                    .expect(404)
+                    .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['404a'])
+                    }) 
+                })
+            })
+            it('DELETE 404a if id valid but nonexistent.', () => {
+                return request(app)
+                .del('/api/comments/6666')
+                .expect(404)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['404a'])
+                }) 
+            })
+            it('DELETE 400b if invalid id.', () => {
+                return request(app)
+                .del('/api/comments/INVALID_ID')
+                .expect(400)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['400b'])
+                }) 
+            })
+            it('Responds 405 if any other methods are used at this endpoint', () => {
+                const url = '/api/comments/2'
+                return Promise.all([
+                    request(app).get(url),
+                    request(app).post(url)
+                ]).then(resArr => {
+                    resArr.forEach(response => {
+                        expect(405)
+                        expect(response.body.msg).to.equal(myErrMsgs['405'])
+                    })
+                })
+            })
         })
     })
 })
 
 
 
+
+
+
+// .expect(405)
+// .then(res => {
+//     expect(res.body.msg).to.equal(myErrMsgs['405'])
+    
+// })
 
 
 

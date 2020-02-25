@@ -8,7 +8,9 @@ exports.myErrMsgs = {
 
 '404': '404 No such resource: Generic error message.',
 '404a': '404a No such resource: Likely a valid but non-corresponding identifier in the url.',
-'404b': '404b No such resource: Nothing in our database fits your specifications.'
+'404b': '404b No such resource: Nothing in our database fits your specifications.',
+
+'405': '405 Method not allowed: You cannot make such a request (eg DELETE, POST, GET, etc) at this particular endpoint. You may have spelled the url wrong.'
 
 }
 
@@ -64,9 +66,9 @@ exports.handleCustomErrors = (err, req, res, next) => { // handles status, custo
 }
 
 exports.handle405s = (req, res, next) => {
-    res.status(405).send({ msg: 'Method not allowed, my friend' })
+    res.status(405).send({ msg: myErrMsgs['405'] })
 }
 
 exports.handle404s = (req, res, next) => {
-    res.status(404).send({ msg: 'Route does not exist my friend' })
+    res.status(404).send({ msg: 'This message will probably never be sent. But btw this is a 404.' })
 }
