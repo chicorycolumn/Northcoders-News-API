@@ -144,27 +144,138 @@ describe('/api', () => {
 
         describe('/article:id', () => {
             
-            // returns an article object, which should have the following properties:
-            // - `author` which is the `username` from the users table
-            // - `title`
-            // - `article_id`
-            // - `body`
-            // - `topic`
-            // - `created_at`
-            // - `votes`
-            // - `comment_count` which is the total count of all the comments with this article_id - you should make use of knex queries in order to achieve this
-
-            it.only('GET 200 returns article by id, with the right properties, including comment_count.', () => {
+            it('GET 200 returns article by id, with the right properties, including comment_count.', () => {
                 return request(app)
-                .get('/api/articles/2')
+                .get('/api/articles/5')
                 .expect(200)
                 .then(res => {
                     expect(res.body.article[0]).to.be.an('Object')
                     expect(res.body.article[0]).to.have.all.keys(['author', 'title', 'article_id', 'body', 'created_at', 'votes', 'comment_count'])
                 }) 
             })
-            
-            
+            it('GET 200 author is username from users table and comment_count equals number of comments for that article.', () => {
+                return request(app)
+                .get('/api/articles/1')
+                .expect(200)
+                .then(res => {
+                    expect(res.body.article[0].author).to.equal('butter_bridge')
+                    expect(res.body.article[0].comment_count).to.equal(13)
+                }) 
+            })
+            it('GET 404 if id valid but nonexistent.', () => {
+                return request(app)
+                .get('/api/articles/6666')
+                .expect(404)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['404a'])
+                }) 
+            })
+            it('GET 400 if invalid id.', () => {
+                return request(app)
+                .get('/api/articles/INVALID_ID')
+                .expect(400)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['400b'])
+                }) 
+            })
+
+
+        //     an object in the form `{ inc_votes: newVote }`
+
+        //     - `newVote` will indicate how much the `votes` property in the database should be updated by
+          
+        //     e.g.
+          
+        //     `{ inc_votes : 1 }` would increment the current article's vote property by 1
+          
+        //     `{ inc_votes : -100 }` would decrement the current article's vote property by 100
+          
+        //   #### Responds with
+          
+        //   - the updated article
+
+            it.only('PATCH 200 returns updated article with votes incremented according to request body', () => {
+                return request(app)
+                .post('/api/articles/1')
+                .send({ inc_votes: 1000 })
+                .expect(200)
+                .then(res => {
+                    delete res.body.article[0].created_at
+                    expect(res.body.article[0]).to.eql(  {
+                        article_id: 1,
+                        title: 'Living in the shadow of a great man',
+                        topic: 'mitch',
+                        author: 'butter_bridge',
+                        body: 'I find this existence challenging',
+                        //created_at: 1542284514171,
+                        votes: 1100,
+                      })
+                })
+            })
+            it.only('PATCH 200 returns updated article with votes decremented according to request body', () => {
+                return request(app)
+                .post('/api/articles/1')
+                .send({ inc_votes: -5100 })
+                .expect(200)
+                .then(res => {
+                    delete res.body.article[0].created_at
+                    expect(res.body.article[0]).to.eql(  {
+                        article_id: 1,
+                        title: 'Living in the shadow of a great man',
+                        topic: 'mitch',
+                        author: 'butter_bridge',
+                        body: 'I find this existence challenging',
+                        //created_at: 1542284514171,
+                        votes: -5000,
+                      })
+                })
+            })
+            it.only('PATCH 404a returns error when id valid but no correspond.', () => {
+                return request(app)
+                .post('/api/articles/6666')
+                .send({ inc_votes: 1000 })
+                .expect(404)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['404a'])
+                })
+            })
+            it.only('PATCH 400b returns error when id invalid.', () => {
+                return request(app)
+                .post('/api/articles/INVALID_ID')
+                .send({ inc_votes: 1000 })
+                .expect(400)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['400b'])
+                })
+            })
+            it.only('PATCH 400a returns error when empty request.', () => {
+                return request(app)
+                .post('/api/articles/1')
+                .send({ })
+                .expect(400)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['400a'])
+                })
+            })
+            it.only('PATCH 400a returns error when key mistyped in request.', () => {
+                return request(app)
+                .post('/api/articles/1')
+                .send({ inc_votesssssssssssssssss: 1000 })
+                .expect(400)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['400a'])
+                })
+            })
+            it.only('PATCH 400aa returns error when value is wrong type in request.', () => {
+                return request(app)
+                .post('/api/articles/1')
+                .send({ inc_votes: 'banana' })
+                .expect(400)
+                .then(res => {
+                    expect(res.body.msg).to.equal(myErrMsgs['400a'])
+                })
+            })
+
             
             describe('/comments', () => {
                 it('GET 200 comments by article ID, each of which have all right keys, and are sorted by created_at descending default.', () => {

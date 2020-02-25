@@ -61,25 +61,43 @@ exports.fetchArticles = () => {
 }
 
 exports.fetchArticleByID = ({article_id}) => {
-    
+
     return connection('articles')
-    .select('author', 'title', 'article_id', 'votes', 'body', 'created_at')
-    .where('article_id', article_id)
-    .then()
-    
+    .join('comments', 'articles.article_id', 'comments.article_id')
+    .select('articles.author', 'articles.title', 'articles.article_id', 'articles.votes', 'articles.body', 'articles.created_at', 'comments.comment_id')
+    .where('articles.article_id', article_id)
+    .then(articleArr => {
+
+        let article = {...articleArr[0]}
+
+        if (Object.keys(article).length === 0){
+
+            return Promise.reject({status: 404})
+        
+        }
+        
+        else {
+        
+            article.comment_count = articleArr.length
+            delete article.comment_id
+            return [article]
+        }
+    })
 }
 
 exports.updateArticleVotes = ({article_id}, {inc_votes}) => {
-    
-    return connection('articles')
-        .where({ article_id: article_id }) // need access keying?
-        .update({votes: votes + parseInt(inc_votes)}) // does this work?
-        .returning('*')
 
-//    This takes an object in the form `{ inc_votes: newVote }`
-//   `{ inc_votes : 1 }` would increment the current article's vote property by 1
-//   `{ inc_votes : -100 }` would decrement the current article's vote property by 100
-    
+    //if (inc_votes === undefined){return Promise.reject({status: 400})}
+
+    else return connection('articles')
+        .where({ article_id: article_id })
+        .increment('votes', inc_votes)
+        //.update('votes', inc_votes + 'votes') // Can this also work?
+        .returning('*')
+        .then(article => {
+            if (Object.keys(article).length === 0){return Promise.reject({status: 404})}
+            else return article
+        })
 }
 
 exports.createNewCommentOnArticle = ({article_id}, {username, body}) => {
