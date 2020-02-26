@@ -1,4 +1,5 @@
 const connection = require("../db/connection");
+const { doesValueExistInTable } = require("../middleware/middleware");
 
 /* 
   I quite liked the way I had solved the "author or topic or both or neither" url query problem in fetchArticles, prior 
@@ -21,65 +22,80 @@ exports.fetchArticleData = (
     ...badUrlQueries
   }
 ) => {
-  if (Object.keys(badUrlQueries).length) {
-    return Promise.reject({ status: 400, customStatus: "400c" });
-  } else
-    return connection
-      .from("articles")
-      .leftJoin("comments", "articles.article_id", "comments.article_id")
-      .count({ comment_count: "comments.article_id" })
-      .groupBy("articles.article_id")
-      .modify(queryBuilder => {
-        if (author !== undefined) {
-          queryBuilder.where("articles.author", author);
-        }
-        if (topic !== undefined) {
-          queryBuilder.where("articles.topic", topic);
-        }
-      })
-      .orderBy(sort_by, order)
+  return Promise.all([
+    doesValueExistInTable(author, "username", "users"),
+    doesValueExistInTable(topic, "topic", "articles")
+  ])
+    .then(promiseAllResults => {
+      if (
+        (author !== undefined && promiseAllResults[0] === false) ||
+        (topic !== undefined && promiseAllResults[1] === false)
+      ) {
+        return Promise.reject({ status: 404, customStatus: "404b" });
+      }
+    })
+    .then(() => {
+      if (Object.keys(badUrlQueries).length) {
+        return Promise.reject({ status: 400, customStatus: "400c" });
+      } else
+        return connection
+          .from("articles")
+          .leftJoin("comments", "articles.article_id", "comments.article_id")
+          .count({ comment_count: "comments.article_id" })
+          .groupBy("articles.article_id")
+          .modify(queryBuilder => {
+            if (author !== undefined) {
+              queryBuilder.where("articles.author", author);
+            }
+            if (topic !== undefined) {
+              queryBuilder.where("articles.topic", topic);
+            }
+          })
+          .orderBy(sort_by, order)
 
-      .modify(queryBuilder => {
-        if (article_id !== undefined) {
-          //Endpoint wants one article.
-          queryBuilder.where("articles.article_id", article_id).first(
-            "articles.author",
-            "articles.title",
-            "articles.article_id",
-            "articles.votes",
-            //"articles.topic", // Not desired at endpoint.
-            "articles.body",
-            "articles.created_at"
-          );
-        } else {
-          // Endpoint wants many articles.
-          queryBuilder.select(
-            "articles.author",
-            "articles.title",
-            "articles.article_id",
-            "articles.votes",
-            "articles.topic",
-            //"articles.body", // Not desired at endpoint.
-            "articles.created_at"
-          );
-        }
-      })
+          .modify(queryBuilder => {
+            if (article_id !== undefined) {
+              //Endpoint wants one article.
+              queryBuilder.where("articles.article_id", article_id).first(
+                "articles.author",
+                "articles.title",
+                "articles.article_id",
+                "articles.votes",
+                //"articles.topic", // Not desired at endpoint.
+                "articles.body",
+                "articles.created_at"
+              );
+            } else {
+              // Endpoint wants many articles.
+              queryBuilder.select(
+                "articles.author",
+                "articles.title",
+                "articles.article_id",
+                "articles.votes",
+                "articles.topic",
+                //"articles.body", // Not desired at endpoint.
+                "articles.created_at"
+              );
+            }
+          })
 
-      .then(articleData => {
-        if (articleData === undefined) {
-          return Promise.reject({ status: 404, customStatus: "404a" });
-        } else if (Array.isArray(articleData)) {
-          if (articleData.length === 0) {
-            return Promise.reject({ status: 404, customStatus: "404b" });
-          } else {
-            articleData.forEach(
-              item => (item.comment_count = parseInt(item.comment_count))
-            );
+          .then(articleData => {
+            if (articleData === undefined) {
+              return Promise.reject({ status: 404, customStatus: "404a" });
+            } else if (Array.isArray(articleData)) {
+              // if (articleData.length === 0) {
+              //   return Promise.reject({ status: 404, customStatus: "404b" }); // Or this could return empty array, as Lurker has written no articles.
+              // } else {
+              articleData.forEach(
+                item => (item.comment_count = parseInt(item.comment_count))
+              );
+              return articleData;
+              // }
+            } else
+              articleData.comment_count = parseInt(articleData.comment_count);
             return articleData;
-          }
-        } else articleData.comment_count = parseInt(articleData.comment_count);
-        return articleData;
-      });
+          });
+    });
 };
 
 exports.updateArticleVotes = ({ article_id }, requestBody) => {

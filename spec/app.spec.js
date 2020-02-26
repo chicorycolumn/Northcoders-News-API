@@ -6,6 +6,7 @@ const chai = require("chai");
 const { expect } = require("chai");
 chai.use(require("sams-chai-sorted"));
 const { myErrMsgs } = require("../errors/errors");
+const endpointsCopy = require("../endpoints.json");
 
 describe("/api", () => {
   after(() => {
@@ -15,17 +16,17 @@ describe("/api", () => {
     return connection.seed.run(); // knex looks in the knexfile to find seed file, and the former contains a link to it.
   });
 
-  // describe("/", () => {
-  //   it.only("Serves up endpoints", () => {
-  //     return request(app)
-  //       .get("/api")
-  //       .expect(200)
-  //       .then(res => {
-  //         expect(res.body.endpoints).to.be.an("Object");
-  //         expect(res.body.endpoints).to.eql(endpointsCopy);
-  //       });
-  //   });
-  // });
+  describe("/", () => {
+    it("Serves up endpoints", () => {
+      return request(app)
+        .get("/api")
+        .expect(200)
+        .then(res => {
+          expect(res.body.endpoints).to.be.an("Object");
+          expect(res.body.endpoints).to.eql(endpointsCopy);
+        });
+    });
+  });
 
   describe("/topics", () => {
     it("GET 200 returns array of all topics, with slug and description.", () => {
@@ -275,20 +276,20 @@ describe("/api", () => {
           //expect(res.body.articles.length).to.equal(11) //Pagination could interfere with this.
         });
     });
-    it("GET 404b returns error if nothing matches that ?query.", () => {
+    it("GET 404b if nothing matches that ?query.", () => {
       return request(app)
         .get("/api/articles?topic=NON_EXISTENT_TOPIC")
         .expect(404)
         .then(res => {
-          expect(res.body.msg).to.equal(myErrMsgs["404b"]);
+          expect(res.body.msg).to.eql(myErrMsgs["404b"]);
         });
     });
-    it("GET 404b returns error if, say the author specified in the query does indeed exist in the database, but no articles are associated with them.", () => {
+    it("GET 200 returns empty array if, say the author specified in the query does indeed exist in the database, but no articles are associated with them.", () => {
       return request(app)
         .get("/api/articles?author=lurker")
-        .expect(404)
+        .expect(200)
         .then(res => {
-          expect(res.body.msg).to.equal(myErrMsgs["404b"]);
+          expect(res.body.articles).to.eql([]);
         });
     });
     it("GET 400c returns error if invalid or nonexistent ?query in url.", () => {
@@ -436,6 +437,43 @@ describe("/api", () => {
             })
         );
       });
+
+      // it("PATCH 200 returns unchanged article when request body is empty", () => {
+      //   return (
+      //     request(app)
+      //       .patch("/api/articles/1")
+      //       .send({ inc_votes: 1000 })
+      //       .expect(200)
+
+      //       //I think testing the exact object might be excessive, so I've trimmed it down to what comes after this chunk.
+      //       // .then(res => {
+      //       //     delete res.body.article.created_at
+      //       //     expect(res.body.article).to.eql(  {
+      //       //         article_id: 1,
+      //       //         title: 'Living in the shadow of a great man',
+      //       //         topic: 'mitch',
+      //       //         author: 'butter_bridge',
+      //       //         body: 'I find this existence challenging',
+      //       //         //created_at: 1542284514171,
+      //       //         votes: 1100,
+      //       //       })
+      //       // })
+
+      //       .then(res => {
+      //         expect(res.body.article.votes).to.equal(1100);
+      //         expect(res.body.article).to.have.all.keys([
+      //           "article_id",
+      //           "title",
+      //           "topic",
+      //           "author",
+      //           "body",
+      //           "created_at",
+      //           "votes"
+      //         ]);
+      //       })
+      //   );
+      // });
+
       it("PATCH 404a returns error when id valid but no correspond.", () => {
         return request(app)
           .patch("/api/articles/6666")

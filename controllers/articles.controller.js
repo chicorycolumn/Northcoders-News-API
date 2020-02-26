@@ -7,7 +7,9 @@ const {
 
 exports.getArticles = (req, res, next) => {
   fetchArticleData(req.params, req.query)
-    .then(articles => res.send({ articles }))
+    .then(articles => {
+      res.send({ articles });
+    })
     .catch(err => next(err));
 };
 
