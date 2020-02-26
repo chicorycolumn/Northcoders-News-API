@@ -61,7 +61,7 @@ exports.fetchArticleByID = ({article_id}) => {
         
             article.comment_count = articleArr.length
             delete article.comment_id
-            return [article]
+            return article
         }
     })
 }
@@ -77,9 +77,9 @@ exports.updateArticleVotes = ({article_id}, requestBody) => {
         .where({ article_id: article_id })
         .increment('votes', inc_votes)
         .returning('*')
-        .then(article => {
-            if (Object.keys(article).length === 0){return Promise.reject({status: 404, customStatus: '404a'})}
-            else return article
+        .then(articles => {
+            if (articles.length === 0){return Promise.reject({status: 404, customStatus: '404a'})}
+            else return articles[0]
         })
 }
 
@@ -98,6 +98,7 @@ exports.createNewCommentOnArticle = ({article_id}, {username, body}) => {
         return connection.insert({article_id: article_id, author: username, body: body})
         .into('comments')
         .returning('*')
+        .then(commentArr => {return commentArr[0]})
 
     })
 }

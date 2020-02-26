@@ -7,7 +7,7 @@ exports.fetchUserByUsername = ({username}) => {
         if (userArray.length === 0){
             return Promise.reject({status: 404, customStatus: '404a'})
         } else {
-            return userArray
+            return userArray[0]
         }
     })
 }
