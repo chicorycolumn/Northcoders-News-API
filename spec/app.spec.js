@@ -26,6 +26,19 @@ describe("/api", () => {
           expect(res.body.endpoints).to.eql(endpointsCopy);
         });
     });
+    it("Responds 405 if any other methods are used at this endpoint", () => {
+      const url = "/api";
+      return Promise.all([
+        request(app).del(url),
+        request(app).patch(url),
+        request(app).post(url)
+      ]).then(resArr => {
+        resArr.forEach(response => {
+          expect(405);
+          expect(response.body.msg).to.equal(myErrMsgs["405"]);
+        });
+      });
+    });
   });
 
   describe("/topics", () => {
@@ -438,41 +451,24 @@ describe("/api", () => {
         );
       });
 
-      // it("PATCH 200 returns unchanged article when request body is empty", () => {
-      //   return (
-      //     request(app)
-      //       .patch("/api/articles/1")
-      //       .send({ inc_votes: 1000 })
-      //       .expect(200)
-
-      //       //I think testing the exact object might be excessive, so I've trimmed it down to what comes after this chunk.
-      //       // .then(res => {
-      //       //     delete res.body.article.created_at
-      //       //     expect(res.body.article).to.eql(  {
-      //       //         article_id: 1,
-      //       //         title: 'Living in the shadow of a great man',
-      //       //         topic: 'mitch',
-      //       //         author: 'butter_bridge',
-      //       //         body: 'I find this existence challenging',
-      //       //         //created_at: 1542284514171,
-      //       //         votes: 1100,
-      //       //       })
-      //       // })
-
-      //       .then(res => {
-      //         expect(res.body.article.votes).to.equal(1100);
-      //         expect(res.body.article).to.have.all.keys([
-      //           "article_id",
-      //           "title",
-      //           "topic",
-      //           "author",
-      //           "body",
-      //           "created_at",
-      //           "votes"
-      //         ]);
-      //       })
-      //   );
-      // });
+      it("PATCH 200 returns unchanged item when empty request.", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({})
+          .expect(200)
+          .then(res => {
+            expect(res.body.article.votes).to.equal(100);
+            expect(res.body.article).to.have.all.keys([
+              "article_id",
+              "title",
+              "topic",
+              "author",
+              "body",
+              "created_at",
+              "votes"
+            ]);
+          });
+      });
 
       it("PATCH 404a returns error when id valid but no correspond.", () => {
         return request(app)
@@ -492,15 +488,15 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["400b"]);
           });
       });
-      it("PATCH 400a returns error when empty request.", () => {
-        return request(app)
-          .patch("/api/articles/1")
-          .send({})
-          .expect(400)
-          .then(res => {
-            expect(res.body.msg).to.equal(myErrMsgs["400a"]);
-          });
-      });
+      // it("PATCH 400a returns error when empty request.", () => {
+      //   return request(app)
+      //     .patch("/api/articles/1")
+      //     .send({})
+      //     .expect(400)
+      //     .then(res => {
+      //       expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+      //     });
+      // });
       it("PATCH 400a returns error when missing fields, eg key mistyped in request.", () => {
         return request(app)
           .patch("/api/articles/1")
@@ -772,13 +768,21 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["400b"]);
           });
       });
-      it("PATCH 400a returns error when empty request.", () => {
+      it("PATCH 200 returns unchanged object when empty request.", () => {
         return request(app)
-          .patch("/api/comments/1")
+          .patch("/api/comments/2")
           .send({})
-          .expect(400)
+          .expect(200)
           .then(res => {
-            expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+            expect(res.body.comment).to.eql({
+              comment_id: 2,
+              author: "butter_bridge",
+              article_id: 1,
+              votes: 14,
+              created_at: "2016-11-22T12:36:03.389Z",
+              body:
+                "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky."
+            });
           });
       });
       it("PATCH 400a returns error when fields missing in request, eg mistyped keys.", () => {

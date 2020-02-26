@@ -98,21 +98,22 @@ exports.fetchArticleData = (
     });
 };
 
-exports.updateArticleVotes = ({ article_id }, requestBody) => {
-  const inc_votes = requestBody.inc_votes;
-
-  if (inc_votes === undefined || Object.keys(requestBody).length > 1) {
+exports.updateArticleVotes = (
+  { article_id },
+  { inc_votes = 0, ...badQueries }
+) => {
+  if (Object.keys(badQueries).length > 0) {
     return Promise.reject({ status: 400, customStatus: "400a" });
-  } else
-    return connection("articles")
-      .where({ article_id: article_id })
-      .increment("votes", inc_votes)
-      .returning("*")
-      .then(articles => {
-        if (articles.length === 0) {
-          return Promise.reject({ status: 404, customStatus: "404a" });
-        } else return articles[0];
-      });
+  }
+  return connection("articles")
+    .where({ article_id: article_id })
+    .increment("votes", inc_votes)
+    .returning("*")
+    .then(articles => {
+      if (articles.length === 0) {
+        return Promise.reject({ status: 404, customStatus: "404a" });
+      } else return articles[0];
+    });
 };
 
 exports.createNewCommentOnArticle = ({ article_id }, { username, body }) => {
