@@ -14,7 +14,7 @@ exports.fetchArticles = ({sort_by = 'articles.created_at', order = 'desc', autho
     .select('*')
     .then(commentsArr => {
         return connection('articles')
-        .select('*')
+        .select('author', 'title', 'article_id', 'topic', 'created_at', 'votes')
         .where('topic', 'like', topic)
         .andWhere('author', 'like', author)
         .orderBy(sort_by, order)
@@ -23,7 +23,6 @@ exports.fetchArticles = ({sort_by = 'articles.created_at', order = 'desc', autho
             if (articlesArr.length === 0){return Promise.reject({status: 404, customStatus: '404b'})}else
 
             articlesArr.forEach(article => {
-                delete article.body
                 article.comment_count = 
                 commentsArr.filter(comment => comment.article_id === article.article_id).length
             })
@@ -101,12 +100,6 @@ exports.createNewCommentOnArticle = ({article_id}, {username, body}) => {
         .returning('*')
 
     })
-
-    
-    //Make sure newComment has the article_id inserted.
-
-
-
 }
 
 

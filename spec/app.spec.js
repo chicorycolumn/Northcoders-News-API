@@ -541,6 +541,7 @@ describe('/api', () => {
                         comment_id: 2,
                         author: 'butter_bridge',
                         article_id: 1,
+                        created_at: "2016-11-22T12:36:03.389Z",
                         votes: -500,
                         body: 'The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.'
                   })

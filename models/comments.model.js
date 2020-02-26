@@ -16,17 +16,14 @@ exports.updateCommentVotes = ({comment_id}, requestBody) => {
         })
 }
 
-exports.updateArticleVotes = ({article_id}, requestBody) => {
+exports.updateArticleVotes = ({article_id}, {inc_votes, ...unnecessaryValues}) => {
 
-    const inc_votes = requestBody.inc_votes
-
-    if (inc_votes === undefined || Object.keys(requestBody).length>1){return Promise.reject({status: 400, customStatus: '400a'})}
+    if (inc_votes === undefined || Object.keys(unnecessaryValues).length>1){return Promise.reject({status: 400, customStatus: '400a'})}
     else 
     
     return connection('articles')
         .where({ article_id: article_id })
         .increment('votes', inc_votes)
-        //.update('votes', inc_votes + 'votes') // Can this also work?
         .returning('*')
         .then(article => {
             if (Object.keys(article).length === 0){return Promise.reject({status: 404, customStatus: '404a'})}
@@ -34,7 +31,7 @@ exports.updateArticleVotes = ({article_id}, requestBody) => {
         })
 }
 
-exports.deleteCommentByID = ({comment_id}) => { //responds w status 204 and no content
+exports.deleteCommentByID = ({comment_id}) => {
     return connection('comments')
         .where({ comment_id: comment_id })
         .del()
@@ -42,7 +39,6 @@ exports.deleteCommentByID = ({comment_id}) => { //responds w status 204 and no c
             if (numberRowsDeleted === 0){return Promise.reject({status: 404, customStatus: '404a'})}
             else return numberRowsDeleted
         })
-        //.then(x => console.log(x)) //Gives number of rows deleted.
 }
 
 
