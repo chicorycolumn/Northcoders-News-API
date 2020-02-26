@@ -81,6 +81,7 @@ Then add a `production` key to the `customConfigs` object:
 const { DB_URL } = process.env;
 // ...
 const customConfigs = {
+  // *********************Mine is called customConfig!
   // ...
   production: {
     connection: `${DB_URL}?ssl=true`
@@ -94,7 +95,7 @@ It is critical to add the query of `ssl=true`, otherwise this will not work!
 In your `./db/data/index.js` add a key of production with a value of your development data in your data object. Something like:
 
 ```js
-const data = { test, development, production: development };
+const data = { test, development, production: development }; // Mine is production: devData
 ```
 
 This is will ensure your production DB will get seeded with the development data.
