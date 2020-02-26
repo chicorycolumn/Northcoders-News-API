@@ -305,6 +305,14 @@ describe("/api", () => {
           expect(res.body.articles).to.eql([]);
         });
     });
+    it("GET 200 returns empty array if, say the topic specified in the query does indeed exist in the database, but no articles are associated with them.", () => {
+      return request(app)
+        .get("/api/articles?topic=paper")
+        .expect(200)
+        .then(res => {
+          expect(res.body.articles).to.eql([]);
+        });
+    });
     it("GET 400c returns error if invalid or nonexistent ?query in url.", () => {
       return request(app)
         .get("/api/articles?topiccccccccccccc=mitch")
@@ -348,6 +356,7 @@ describe("/api", () => {
               "author",
               "title",
               "article_id",
+              "topic",
               "body",
               "created_at",
               "votes",
@@ -556,6 +565,15 @@ describe("/api", () => {
               expect(res.body.comments).to.be.sortedBy("created_at", {
                 descending: true
               });
+            });
+        });
+        it("GET 200 comments by article ID, empty array for existing article that has no comments", () => {
+          return request(app)
+            .get("/api/articles/2/comments")
+            .expect(200)
+            .then(res => {
+              expect(res.body.comments).to.be.an("Array");
+              expect(res.body.comments).to.eql([]);
             });
         });
         it("GET 200 comments by article ID, where author is the username from users table.", () => {

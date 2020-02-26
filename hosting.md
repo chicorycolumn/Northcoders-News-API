@@ -26,13 +26,15 @@ heroku login
 
 Create an app in an active git directory. Doing this in the folder where your server exists is a good start, as this is what you will be hosting.
 
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > So is that, my top level NC News folder?
+
 ```bash
 heroku create your-app-name
 ```
 
 Here `your-app-name` should be the name you want to give your application. If you don't specify an app name, you'll get a random one which can sometimes be a bit iffy.
 
-This command will both create an app on Heroku for your account. It will also add a new `remote` to your git repository.
+This command will both create an app on Heroku for your account and add a new `remote` to your git repository.
 Check this by looking at your git remotes:
 
 ```bash
@@ -81,8 +83,8 @@ const { DB_URL } = process.env;
 const customConfigs = {
   // ...
   production: {
-    connection: `${DB_URL}?ssl=true`,
-  },
+    connection: `${DB_URL}?ssl=true`
+  }
 };
 // ...
 ```
@@ -122,13 +124,13 @@ npm run seed:prod
 Change your connection file to look something like this:
 
 ```js
-const ENV = process.env.NODE_ENV || 'development';
-const knex = require('knex');
+const ENV = process.env.NODE_ENV || "development";
+const knex = require("knex");
 
 const dbConfig =
-  ENV === 'production'
-    ? { client: 'pg', connection: process.env.DATABASE_URL }
-    : require('../knexfile');
+  ENV === "production"
+    ? { client: "pg", connection: process.env.DATABASE_URL }
+    : require("../knexfile");
 
 module.exports = knex(dbConfig);
 ```

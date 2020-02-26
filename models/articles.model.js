@@ -24,7 +24,7 @@ exports.fetchArticleData = (
 ) => {
   return Promise.all([
     doesValueExistInTable(author, "username", "users"),
-    doesValueExistInTable(topic, "topic", "articles")
+    doesValueExistInTable(topic, "slug", "topics")
   ])
     .then(promiseAllResults => {
       if (
@@ -61,7 +61,7 @@ exports.fetchArticleData = (
                 "articles.title",
                 "articles.article_id",
                 "articles.votes",
-                //"articles.topic", // Not desired at endpoint.
+                "articles.topic", // Not desired at endpoint.
                 "articles.body",
                 "articles.created_at"
               );
@@ -143,21 +143,34 @@ exports.fetchCommentsByArticle = (
   { article_id },
   { sort_by = "created_at", order = "desc", ...badUrlQueries }
 ) => {
-  if (Object.keys(badUrlQueries).length) {
-    return Promise.reject({ status: 400, customStatus: "400c" });
-  } else
-    return connection
-      .select("comment_id", "votes", "created_at", "author", "body")
-      .from("comments")
-      .where("article_id", article_id)
-      .orderBy(sort_by, order)
-      .then(commentsArr => {
-        if (commentsArr.length === 0) {
-          return Promise.reject({ status: 404, customStatus: "404a" });
-        } else {
-          return commentsArr;
-        }
-      });
+  return connection
+    .select("*")
+    .from("articles")
+    .where("article_id", article_id)
+    .then(result => {
+      if (result.length === 0) {
+        return Promise.reject({ status: 404, customStatus: "404a" });
+      }
+    })
+    .then(() => {
+      //Check if article_id exists in articles, if not, then throw error, but if so, then send back any result, incl empty array.
+
+      if (Object.keys(badUrlQueries).length) {
+        return Promise.reject({ status: 400, customStatus: "400c" });
+      } else
+        return connection
+          .select("comment_id", "votes", "created_at", "author", "body")
+          .from("comments")
+          .where("article_id", article_id)
+          .orderBy(sort_by, order)
+          .then(commentsArr => {
+            // if (commentsArr.length === 0) {
+            //   return Promise.reject({ status: 404, customStatus: "404a" });
+            // } else {
+            return commentsArr;
+            // }
+          });
+    });
 };
 
 //BACK WHEN fetchArticleData was two separate Model Functions: fetchArticles and fetchArticleByID. Perhaps this was better!
