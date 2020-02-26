@@ -1,14 +1,15 @@
-const apiRouter = require('express').Router() // express? or knex somehow?
+const apiRouter = require("express").Router();
 
-const topicsRouter = require('./topicsRouter')
-const usersRouter = require('./usersRouter')
-const articlesRouter = require('./articlesRouter')
-const commentsRouter = require('./commentsRouter')
+const topicsRouter = require("./topicsRouter");
+const usersRouter = require("./usersRouter");
+const articlesRouter = require("./articlesRouter");
+const commentsRouter = require("./commentsRouter");
+const { getEndpoints } = require("../controllers/api.controller");
 
-//apiRouter.use('/', getAllEndPoints) //This is after the stop sign, Elmo.
-apiRouter.use('/topics', topicsRouter)
-apiRouter.use('/users', usersRouter)
-apiRouter.use('/articles', articlesRouter)
-apiRouter.use('/comments', commentsRouter)
+apiRouter.use("/topics", topicsRouter);
+apiRouter.use("/users", usersRouter);
+apiRouter.use("/articles", articlesRouter);
+apiRouter.use("/comments", commentsRouter);
+apiRouter.use("/", getEndpoints);
 
-module.exports = apiRouter
+module.exports = apiRouter;

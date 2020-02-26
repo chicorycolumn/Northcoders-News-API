@@ -15,6 +15,18 @@ describe("/api", () => {
     return connection.seed.run(); // knex looks in the knexfile to find seed file, and the former contains a link to it.
   });
 
+  // describe("/", () => {
+  //   it.only("Serves up endpoints", () => {
+  //     return request(app)
+  //       .get("/api")
+  //       .expect(200)
+  //       .then(res => {
+  //         expect(res.body.endpoints).to.be.an("Object");
+  //         expect(res.body.endpoints).to.eql(endpointsCopy);
+  //       });
+  //   });
+  // });
+
   describe("/topics", () => {
     it("GET 200 returns array of all topics, with slug and description.", () => {
       return request(app)
