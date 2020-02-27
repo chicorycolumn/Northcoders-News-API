@@ -392,12 +392,12 @@ Should accept the following queries:
 #### More Routes
 
 ```http
-POST /api/articles
+POST /api/articles // done
 
-DELETE /api/articles/:article_id
+DELETE /api/articles/:article_id // done
 
-POST /api/topics
+POST /api/topics // done
 
 POST /api/users
-GET /api/users
+GET /api/users // done
 ```

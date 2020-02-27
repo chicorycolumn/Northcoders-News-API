@@ -4,19 +4,23 @@ const {
   getArticleByID,
   patchArticleVotes,
   postNewCommentOnArticle,
-  getCommentsByArticle
+  getCommentsByArticle,
+  postNewArticle,
+  dropArticleByID
 } = require("../controllers/articles.controller");
 const { handle405s } = require("../errors/errors");
 
 articlesRouter
   .route("/")
   .get(getArticles)
+  .post(postNewArticle)
   .all(handle405s);
 
 articlesRouter
   .route("/:article_id")
   .get(getArticleByID)
   .patch(patchArticleVotes)
+  .delete(dropArticleByID)
   .all(handle405s);
 
 articlesRouter

@@ -41,7 +41,84 @@ describe("/api", () => {
     });
   });
 
-  describe("/topics", () => {
+  describe.only("/topics", () => {
+    it.only("**POST 201 responds with created topic.", () => {
+      return request(app)
+        .post("/api/topics")
+        .send({
+          description: "the smell of a mown lawn",
+          slug: "grass"
+        })
+        .expect(201)
+        .then(res => {
+          expect(res.body.topic).to.have.all.keys(["description", "slug"]);
+          expect(res.body.topic.description).to.equal(
+            "the smell of a mown lawn"
+          );
+          expect(res.body.topic.slug).to.equal("grass");
+        });
+    });
+
+    it.only("**POST: 400a responds with error when missing fields", () => {
+      return request(app)
+        .post("/api/topics")
+        .send({})
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.eql(myErrMsgs["400a"]);
+        });
+    });
+
+    it.only("**POST: 400a responds with error when failing schema validation", () => {
+      return request(app)
+        .post("/api/topics")
+        .send({
+          descriptionnnnnnnnnnnnnnnnnnnnnnn: "the smell of a mown lawn",
+          slug: "grass"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+        });
+    });
+    it.only("**POST: 400e responds with error when failing schema validation due to too long field", () => {
+      return request(app)
+        .post("/api/topics")
+        .send({
+          description: "the smell of a mown lawn",
+          slug:
+            "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400e"]);
+        });
+    });
+    it.only("**POST 400a returns error when request contains other values.", () => {
+      return request(app)
+        .post("/api/topics")
+        .send({
+          description: "the smell of a mown lawn",
+          slug: "grass",
+          unnecessaryKey: "NO_NEED_FOR_THIS"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+        });
+    });
+    it.only("**Responds 405 if any other methods are used at this endpoint", () => {
+      const url = "/api/topics";
+      return Promise.all([request(app).del(url), request(app).patch(url)]).then(
+        resArr => {
+          resArr.forEach(response => {
+            expect(405);
+            expect(response.body.msg).to.equal(myErrMsgs["405"]);
+          });
+        }
+      );
+    });
+
     it("GET 200 returns array of all topics, with slug and description.", () => {
       return request(app)
         .get("/api/topics")
@@ -68,6 +145,102 @@ describe("/api", () => {
     });
   });
   describe("/users", () => {
+    it.only("**POST 201 responds with created user.", () => {
+      return request(app)
+        .post("/api/users")
+        .send({
+          username: "queen",
+          avatar_url: "www.ask.com/crown.png",
+          name: "lena"
+        })
+        .expect(201)
+        .then(res => {
+          expect(res.body.user).to.have.all.keys([
+            "username",
+            "avatar_url",
+            "name"
+          ]);
+          expect(res.body.user.name).to.equal("lena");
+          expect(res.body.topic.avatar_url).to.equal("www.ask.com/crown.png");
+          expect(res.body.topic.username).to.equal("queen");
+        });
+    });
+
+    it.only("**POST: 400a responds with error when missing fields", () => {
+      return request(app)
+        .post("/api/users")
+        .send({})
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.eql(myErrMsgs["400a"]);
+        });
+    });
+
+    it.only("**POST: 400a responds with error when failing schema validation", () => {
+      return request(app)
+        .post("/api/users")
+        .send({
+          usernameeeeeeeeeeeeeeeeeee: "queen",
+          avatar_url: "www.ask.com/crown.png",
+          name: "lena"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+        });
+    });
+    it.only("**POST: 400e responds with error when failing schema validation due to too long field", () => {
+      return request(app)
+        .post("/api/users")
+        .send({
+          username: "queen",
+          avatar_url: "www.ask.com/crown.png",
+          name:
+            "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400e"]);
+        });
+    });
+    it.only("**POST 400a returns error when request contains other values.", () => {
+      return request(app)
+        .post("/api/users")
+        .send({
+          username: "queen",
+          avatar_url: "www.ask.com/crown.png",
+          name: "lena",
+          unnecessaryKey: "NO_NEED_FOR_THIS_RUBBISH"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+        });
+    });
+
+    it.only("**GET 200 returns array of all users.", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
+        .then(res => {
+          expect(res.body.topics).to.be.an("Array");
+          res.body.topics.forEach(user =>
+            expect(user).to.have.all.keys(["username", "avatar_url", "name"])
+          );
+        });
+    });
+    it.only("Responds 405 if any other methods are used at this endpoint", () => {
+      const url = "/api/users";
+      return Promise.all([request(app).del(url), request(app).patch(url)]).then(
+        resArr => {
+          resArr.forEach(response => {
+            expect(405);
+            expect(response.body.msg).to.equal(myErrMsgs["405"]);
+          });
+        }
+      );
+    });
+
     describe("/:username", () => {
       it("GET 200 returns user by ID, which has username, avatar_url, and name.", () => {
         return request(app)
@@ -109,6 +282,144 @@ describe("/api", () => {
     });
   });
   describe("/articles", () => {
+    it("**POST 201 responds with created article.", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          title: "Lord Rex",
+          topic: "mitch",
+          author: "donovan",
+          body: "Lord Rex is a bad man."
+        })
+        .expect(201)
+        .then(res => {
+          expect(res.body.article).to.have.all.keys([
+            "title",
+            "topic",
+            "author",
+            "body",
+            "article_id",
+            "created_at",
+            "votes"
+          ]);
+          expect(res.body.article.author).to.equal("donovan");
+          expect(res.body.article.article_id).to.equal(13);
+          expect(res.body.article.body).to.equal("Lord Rex is a bad man.");
+          expect(res.body.article.topic).to.equal("mitch");
+          expect(res.body.article.votes).to.equal(0);
+        });
+    });
+
+    it("**POST 201 responds with created article, including can specify how many votes.", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          title: "Lord Rex",
+          topic: "mitch",
+          author: "donovan",
+          body: "Lord Rex is a bad man.",
+          votes: 12
+        })
+        .expect(201)
+        .then(res => {
+          expect(res.body.article).to.have.all.keys([
+            "title",
+            "topic",
+            "author",
+            "body",
+            "article_id",
+            "created_at",
+            "votes"
+          ]);
+          expect(res.body.article.author).to.equal("donovan");
+          expect(res.body.article.article_id).to.equal(13);
+          expect(res.body.article.body).to.equal("Lord Rex is a bad man.");
+          expect(res.body.article.topic).to.equal("mitch");
+          expect(res.body.article.votes).to.equal(12);
+        });
+    });
+
+    it("**POST: 400a responds with error when missing fields", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({})
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.eql(myErrMsgs["400a"]);
+        });
+    });
+
+    it("**POST: 400a responds with error when failing schema validation", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          titleeeeeeeeeeeeeeeeee: "Lord Rex",
+          topic: "mitch",
+          author: "donovan",
+          body: "Lord Rex is a bad man."
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+        });
+    });
+    it.only("**POST: 400a responds with error when failing schema validation due to too long field", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          titleeeeeeeeeeeeeeeeee: "Lord Rex",
+          topic: "mitch",
+          author: "donovan",
+          body:
+            "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+        });
+    });
+    it("**POST 400a returns error when request contains other values.", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          title: "Lord Rex",
+          topic: "mitch",
+          author: "donovan",
+          body: "Lord Rex is a bad man.",
+          unnecessaryKey: "NOT_THIS"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+        });
+    });
+    it("**POST 400b returns error when value is wrong type in request.", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          title: "Lord Rex",
+          topic: "mitch",
+          author: "donovan",
+          body: "Lord Rex is a bad man.",
+          votes: "banana"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400b"]);
+        });
+    });
+    it("**Responds 405 if any other methods are used at this endpoint", () => {
+      const url = "/api/articles";
+      return Promise.all([request(app).del(url), request(app).patch(url)]).then(
+        resArr => {
+          resArr.forEach(response => {
+            expect(405);
+            expect(response.body.msg).to.equal(myErrMsgs["405"]);
+          });
+        }
+      );
+    });
+
     it("GET 200 returns an array of article objects, each having all the keys, BUT with body key excluded, AND with comment_count key added, sorted by created_at in descending by default.", () => {
       return request(app)
         .get("/api/articles")
@@ -333,19 +644,65 @@ describe("/api", () => {
     });
     it("Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/articles";
-      return Promise.all([
-        request(app).del(url),
-        request(app).patch(url),
-        request(app).post(url)
-      ]).then(resArr => {
-        resArr.forEach(response => {
-          expect(405);
-          expect(response.body.msg).to.equal(myErrMsgs["405"]);
-        });
-      });
+      return Promise.all([request(app).del(url), request(app).patch(url)]).then(
+        resArr => {
+          resArr.forEach(response => {
+            expect(405);
+            expect(response.body.msg).to.equal(myErrMsgs["405"]);
+          });
+        }
+      );
     });
 
-    describe("/article:id", () => {
+    describe("/:articleid", () => {
+      it("**DELETE 204 returns no body after sucessful deletion", () => {
+        return request(app)
+          .del("/api/articles/3")
+          .expect(204)
+          .then(res => {
+            expect(res.body).to.eql({});
+          });
+      });
+      it("**DELETE 204   It was... definitely deleted, right?", () => {
+        return request(app)
+          .del("/api/articles/4")
+          .expect(204)
+          .then(res => {
+            return request(app)
+              .patch("/api/articles/4")
+              .send({ inc_votes: 1000 })
+              .expect(404)
+              .then(res => {
+                expect(res.body.msg).to.equal(myErrMsgs["404a"]);
+              });
+          });
+      });
+      it("**DELETE 404a if id valid but nonexistent.", () => {
+        return request(app)
+          .del("/api/articles/6666")
+          .expect(404)
+          .then(res => {
+            expect(res.body.msg).to.equal(myErrMsgs["404a"]);
+          });
+      });
+      it("**DELETE 400b if invalid id.", () => {
+        return request(app)
+          .del("/api/articles/INVALID_ID")
+          .expect(400)
+          .then(res => {
+            expect(res.body.msg).to.equal(myErrMsgs["400b"]);
+          });
+      });
+      it("**Responds 405 if any other methods are used at this endpoint", () => {
+        const url = "/api/articles/2";
+        return Promise.all([request(app).post(url)]).then(resArr => {
+          resArr.forEach(response => {
+            expect(405);
+            expect(response.body.msg).to.equal(myErrMsgs["405"]);
+          });
+        });
+      });
+
       it("GET 200 returns article by id, with the right properties, including comment_count.", () => {
         return request(app)
           .get("/api/articles/5")
@@ -535,10 +892,7 @@ describe("/api", () => {
       });
       it("Responds 405 if any other methods are used at this endpoint", () => {
         const url = "/api/articles/3";
-        return Promise.all([
-          request(app).del(url),
-          request(app).post(url)
-        ]).then(resArr => {
+        return Promise.all([request(app).post(url)]).then(resArr => {
           resArr.forEach(response => {
             expect(405);
             expect(response.body.msg).to.equal(myErrMsgs["405"]);
@@ -700,6 +1054,19 @@ describe("/api", () => {
             .expect(400)
             .then(res => {
               expect(res.body.msg).to.equal(myErrMsgs["400b"]);
+            });
+        });
+        it("POST 400a returns error when request contains other values.", () => {
+          return request(app)
+            .post("/api/articles/1/comments")
+            .send({
+              username: "Genghis",
+              body: "Not enough pillaging",
+              unnecessaryKey: "NOT_THIS"
+            })
+            .expect(400)
+            .then(res => {
+              expect(res.body.msg).to.equal(myErrMsgs["400a"]);
             });
         });
         it("Responds 405 if any other methods are used at this endpoint", () => {

@@ -116,7 +116,14 @@ exports.updateArticleVotes = (
     });
 };
 
-exports.createNewCommentOnArticle = ({ article_id }, { username, body }) => {
+exports.createNewCommentOnArticle = (
+  { article_id },
+  { username, body, ...unnecessaryKeys }
+) => {
+  if (Object.keys(unnecessaryKeys).length) {
+    return Promise.reject({ status: 400, customStatus: "400a" });
+  }
+
   return connection
     .select("*")
     .from("articles")
@@ -170,6 +177,44 @@ exports.fetchCommentsByArticle = (
             return commentsArr;
             // }
           });
+    });
+};
+
+exports.createNewArticle = ({
+  title,
+  topic,
+  author,
+  body,
+  votes = 0,
+  ...unnecessaryKeys
+}) => {
+  if (Object.keys(unnecessaryKeys).length) {
+    return Promise.reject({ status: 400, customStatus: "400a" });
+  }
+
+  return connection
+    .insert({
+      title: title,
+      topic: topic,
+      author: author,
+      body: body,
+      votes: votes
+    })
+    .into("articles")
+    .returning("*")
+    .then(articleArr => {
+      return articleArr[0];
+    });
+};
+
+exports.deleteArticleByID = ({ article_id }) => {
+  return connection("articles")
+    .where({ article_id: article_id })
+    .del()
+    .then(numberRowsDeleted => {
+      if (numberRowsDeleted === 0) {
+        return Promise.reject({ status: 404, customStatus: "404a" });
+      } else return numberRowsDeleted;
     });
 };
 
