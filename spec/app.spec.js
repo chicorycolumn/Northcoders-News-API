@@ -119,6 +119,48 @@ describe("/api", () => {
       );
     });
 
+    //Topics endpoint does not currently accept queries.
+    // it.only("##GET 200 returns an array of topic objects, limited to 10 items by default, starting page 1 by default", () => {
+    //   return request(app)
+    //     .get("/api/topics")
+    //     .expect(200)
+    //     .then(res => {
+    //       expect(res.body.topics).to.be.an("Array");
+    //       expect(res.body.topics.length).to.equal(10);
+    //       expect(res.body.total_count).to.equal(13);
+    //     });
+    // });
+
+    // it.only("##GET 200 returns an array of topic objects, page and limit specifiable", () => {
+    //   return request(app)
+    //     .get("/api/topics?limit=6")
+    //     .expect(200)
+    //     .then(res => {
+    //       expect(res.body.topics).to.be.an("Array");
+    //       expect(res.body.topics.length).to.equal(6);
+    //       expect(res.body.total_count).to.equal(13);
+    //     });
+    // });
+
+    // it.only("##GET 200 returns an array of comment objects, page and limit specifiable", () => {
+    //   return request(app)
+    //     .get("/api/topics?limit=6&p=1")
+    //     .expect(200)
+    //     .then(firstSixTopics => {
+    //       return request(app)
+    //         .get("/api/topics?limit=3&p=2")
+    //         .expect(200)
+    //         .then(secondThreeTopics => {
+    //           expect(secondThreeTopics.body.topics).to.be.an("Array");
+    //           expect(secondThreeTopics.body.topics.length).to.equal(3);
+    //           expect(secondThreeTopics.body.total_count).to.equal(13);
+    //           expect(firstSixTopics.body.topics.slice(3, 6)).to.eql(
+    //             secondThreeTopics.body.topics
+    //           );
+    //         });
+    //     });
+    // });
+
     it("GET 200 returns array of all topics, with slug and description.", () => {
       return request(app)
         .get("/api/topics")
@@ -280,142 +322,45 @@ describe("/api", () => {
     });
   });
   describe("/articles", () => {
-    it("**POST 201 responds with created article.", () => {
+    it("##GET 200 returns an array of article objects, limited to 10 items by default, starting page 1 by default", () => {
       return request(app)
-        .post("/api/articles")
-        .send({
-          title: "Lord Rex",
-          topic: "mitch",
-          author: "donovan",
-          body: "Lord Rex is a bad man."
-        })
-        .expect(201)
+        .get("/api/articles")
+        .expect(200)
         .then(res => {
-          expect(res.body.article).to.have.all.keys([
-            "title",
-            "topic",
-            "author",
-            "body",
-            "article_id",
-            "created_at",
-            "votes"
-          ]);
-          expect(res.body.article.author).to.equal("donovan");
-          expect(res.body.article.article_id).to.equal(13);
-          expect(res.body.article.body).to.equal("Lord Rex is a bad man.");
-          expect(res.body.article.topic).to.equal("mitch");
-          expect(res.body.article.votes).to.equal(0);
+          expect(res.body.articles).to.be.an("Array");
+          expect(res.body.articles.length).to.equal(10);
+          expect(res.body.total_count).to.equal(12);
         });
     });
 
-    it("**POST 201 responds with created article, including can specify how many votes.", () => {
+    it("##GET 200 returns an array of article objects, page and limit specifiable", () => {
       return request(app)
-        .post("/api/articles")
-        .send({
-          title: "Lord Rex",
-          topic: "mitch",
-          author: "donovan",
-          body: "Lord Rex is a bad man.",
-          votes: 12
-        })
-        .expect(201)
+        .get("/api/articles?limit=6")
+        .expect(200)
         .then(res => {
-          expect(res.body.article).to.have.all.keys([
-            "title",
-            "topic",
-            "author",
-            "body",
-            "article_id",
-            "created_at",
-            "votes"
-          ]);
-          expect(res.body.article.author).to.equal("donovan");
-          expect(res.body.article.article_id).to.equal(13);
-          expect(res.body.article.body).to.equal("Lord Rex is a bad man.");
-          expect(res.body.article.topic).to.equal("mitch");
-          expect(res.body.article.votes).to.equal(12);
+          expect(res.body.articles).to.be.an("Array");
+          expect(res.body.articles.length).to.equal(6);
+          expect(res.body.total_count).to.equal(12);
         });
     });
 
-    it("**POST: 400a responds with error when missing fields", () => {
+    it("##GET 200 returns an array of article objects, page and limit specifiable", () => {
       return request(app)
-        .post("/api/articles")
-        .send({})
-        .expect(400)
-        .then(res => {
-          expect(res.body.msg).to.eql(myErrMsgs["400a"]);
+        .get("/api/articles?limit=6&p=1")
+        .expect(200)
+        .then(firstSixArticles => {
+          return request(app)
+            .get("/api/articles?limit=3&p=2")
+            .expect(200)
+            .then(secondThreeArticles => {
+              expect(secondThreeArticles.body.articles).to.be.an("Array");
+              expect(secondThreeArticles.body.articles.length).to.equal(3);
+              expect(secondThreeArticles.body.total_count).to.equal(12);
+              expect(firstSixArticles.body.articles.slice(3, 6)).to.eql(
+                secondThreeArticles.body.articles
+              );
+            });
         });
-    });
-
-    it("**POST: 400a responds with error when failing schema validation", () => {
-      return request(app)
-        .post("/api/articles")
-        .send({
-          titleeeeeeeeeeeeeeeeee: "Lord Rex",
-          topic: "mitch",
-          author: "donovan",
-          body: "Lord Rex is a bad man."
-        })
-        .expect(400)
-        .then(res => {
-          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
-        });
-    });
-    it("**POST: 400a responds with error when failing schema validation due to too long field", () => {
-      return request(app)
-        .post("/api/articles")
-        .send({
-          titleeeeeeeeeeeeeeeeee: "Lord Rex",
-          topic: "mitch",
-          author: "donovan",
-          body:
-            "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
-        })
-        .expect(400)
-        .then(res => {
-          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
-        });
-    });
-    it("**POST 400a returns error when request contains other values.", () => {
-      return request(app)
-        .post("/api/articles")
-        .send({
-          title: "Lord Rex",
-          topic: "mitch",
-          author: "donovan",
-          body: "Lord Rex is a bad man.",
-          unnecessaryKey: "NOT_THIS"
-        })
-        .expect(400)
-        .then(res => {
-          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
-        });
-    });
-    it("**POST 400b returns error when value is wrong type in request.", () => {
-      return request(app)
-        .post("/api/articles")
-        .send({
-          title: "Lord Rex",
-          topic: "mitch",
-          author: "donovan",
-          body: "Lord Rex is a bad man.",
-          votes: "banana"
-        })
-        .expect(400)
-        .then(res => {
-          expect(res.body.msg).to.equal(myErrMsgs["400b"]);
-        });
-    });
-    it("**Responds 405 if any other methods are used at this endpoint", () => {
-      const url = "/api/articles";
-      return Promise.all([request(app).del(url), request(app).patch(url)]).then(
-        resArr => {
-          resArr.forEach(response => {
-            expect(405);
-            expect(response.body.msg).to.equal(myErrMsgs["405"]);
-          });
-        }
-      );
     });
 
     it("GET 200 returns an array of article objects, each having all the keys, BUT with body key excluded, AND with comment_count key added, sorted by created_at in descending by default.", () => {
@@ -641,6 +586,144 @@ describe("/api", () => {
         });
     });
     it("Responds 405 if any other methods are used at this endpoint", () => {
+      const url = "/api/articles";
+      return Promise.all([request(app).del(url), request(app).patch(url)]).then(
+        resArr => {
+          resArr.forEach(response => {
+            expect(405);
+            expect(response.body.msg).to.equal(myErrMsgs["405"]);
+          });
+        }
+      );
+    });
+
+    it("**POST 201 responds with created article.", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          title: "Lord Rex",
+          topic: "mitch",
+          author: "donovan",
+          body: "Lord Rex is a bad man."
+        })
+        .expect(201)
+        .then(res => {
+          expect(res.body.article).to.have.all.keys([
+            "title",
+            "topic",
+            "author",
+            "body",
+            "article_id",
+            "created_at",
+            "votes"
+          ]);
+          expect(res.body.article.author).to.equal("donovan");
+          expect(res.body.article.article_id).to.equal(13);
+          expect(res.body.article.body).to.equal("Lord Rex is a bad man.");
+          expect(res.body.article.topic).to.equal("mitch");
+          expect(res.body.article.votes).to.equal(0);
+        });
+    });
+
+    it("**POST 201 responds with created article, including can specify how many votes.", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          title: "Lord Rex",
+          topic: "mitch",
+          author: "donovan",
+          body: "Lord Rex is a bad man.",
+          votes: 12
+        })
+        .expect(201)
+        .then(res => {
+          expect(res.body.article).to.have.all.keys([
+            "title",
+            "topic",
+            "author",
+            "body",
+            "article_id",
+            "created_at",
+            "votes"
+          ]);
+          expect(res.body.article.author).to.equal("donovan");
+          expect(res.body.article.article_id).to.equal(13);
+          expect(res.body.article.body).to.equal("Lord Rex is a bad man.");
+          expect(res.body.article.topic).to.equal("mitch");
+          expect(res.body.article.votes).to.equal(12);
+        });
+    });
+
+    it("**POST: 400a responds with error when missing fields", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({})
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.eql(myErrMsgs["400a"]);
+        });
+    });
+
+    it("**POST: 400a responds with error when failing schema validation", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          titleeeeeeeeeeeeeeeeee: "Lord Rex",
+          topic: "mitch",
+          author: "donovan",
+          body: "Lord Rex is a bad man."
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+        });
+    });
+    it("**POST: 400a responds with error when failing schema validation due to too long field", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          titleeeeeeeeeeeeeeeeee: "Lord Rex",
+          topic: "mitch",
+          author: "donovan",
+          body:
+            "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+        });
+    });
+    it("**POST 400a returns error when request contains other values.", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          title: "Lord Rex",
+          topic: "mitch",
+          author: "donovan",
+          body: "Lord Rex is a bad man.",
+          unnecessaryKey: "NOT_THIS"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+        });
+    });
+    it("**POST 400b returns error when value is wrong type in request.", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          title: "Lord Rex",
+          topic: "mitch",
+          author: "donovan",
+          body: "Lord Rex is a bad man.",
+          votes: "banana"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400b"]);
+        });
+    });
+    it("**Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/articles";
       return Promise.all([request(app).del(url), request(app).patch(url)]).then(
         resArr => {
@@ -899,6 +982,47 @@ describe("/api", () => {
       });
 
       describe("/comments", () => {
+        it("##GET 200 returns an array of comment objects, limited to 10 items by default, starting page 1 by default", () => {
+          return request(app)
+            .get("/api/articles/1/comments")
+            .expect(200)
+            .then(res => {
+              expect(res.body.comments).to.be.an("Array");
+              expect(res.body.comments.length).to.equal(10);
+              expect(res.body.total_count).to.equal(13);
+            });
+        });
+
+        it("##GET 200 returns an array of comment objects, page and limit specifiable", () => {
+          return request(app)
+            .get("/api/articles/1/comments?limit=6")
+            .expect(200)
+            .then(res => {
+              expect(res.body.comments).to.be.an("Array");
+              expect(res.body.comments.length).to.equal(6);
+              expect(res.body.total_count).to.equal(13);
+            });
+        });
+
+        it("##GET 200 returns an array of comment objects, page and limit specifiable", () => {
+          return request(app)
+            .get("/api/articles/1/comments?limit=6&p=1")
+            .expect(200)
+            .then(firstSixComments => {
+              return request(app)
+                .get("/api/articles/1/comments?limit=3&p=2")
+                .expect(200)
+                .then(secondThreeComments => {
+                  expect(secondThreeComments.body.comments).to.be.an("Array");
+                  expect(secondThreeComments.body.comments.length).to.equal(3);
+                  expect(secondThreeComments.body.total_count).to.equal(13);
+                  expect(firstSixComments.body.comments.slice(3, 6)).to.eql(
+                    secondThreeComments.body.comments
+                  );
+                });
+            });
+        });
+
         it("GET 200 comments by article ID, each of which have all right keys, and are sorted by created_at in descending by default.", () => {
           return request(app)
             .get("/api/articles/5/comments")

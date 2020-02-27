@@ -1,25 +1,26 @@
-const topics = require('./20200224144845_create-topics-table.js')
-const users = require('./20200224160012_create-users-table.js')
+const topics = require("./20200224144845_create-topics-table.js");
+const users = require("./20200224160012_create-users-table.js");
 
 exports.up = function(knex) {
-    
-    //console.log("In articles migrator")
-
-    return knex.schema.createTable('articles', articleTable => {
-        articleTable.increments('article_id').primary()
-        articleTable.string('title').notNullable()
-        articleTable.string('body', 2000).notNullable()
-        articleTable.integer('votes').defaultTo(0)
-        articleTable.string('topic').notNullable().references(topics.slug)
-        articleTable.string('author').notNullable().references(users.username)
-        articleTable.timestamp('created_at').defaultTo(knex.fn.now())
-        
-        //console.log("Leaving articles migrator")
-        
-})};
+  return knex.schema.createTable("articles", articleTable => {
+    articleTable.increments("article_id").primary();
+    articleTable.string("title").notNullable();
+    articleTable.string("body", 2000).notNullable();
+    articleTable.integer("votes").defaultTo(0);
+    articleTable
+      .string("topic")
+      .notNullable()
+      .references(topics.slug);
+    articleTable
+      .string("author")
+      .notNullable()
+      .references(users.username);
+    articleTable.timestamp("created_at").defaultTo(knex.fn.now());
+  });
+};
 
 exports.down = function(knex) {
-    return knex.schema.dropTable('articles')
+  return knex.schema.dropTable("articles");
 };
 // -- CREATE TABLE articles (
 //     --   article_id INT PRIMARY KEY,

@@ -9,8 +9,8 @@ const {
 
 exports.getArticles = (req, res, next) => {
   fetchArticleData(req.params, req.query)
-    .then(articles => {
-      res.send({ articles });
+    .then(articlesAlreadyFormatted => {
+      res.send(articlesAlreadyFormatted);
     })
     .catch(err => next(err));
 };
@@ -37,7 +37,7 @@ exports.postNewCommentOnArticle = (req, res, next) => {
 
 exports.getCommentsByArticle = (req, res, next) => {
   fetchCommentsByArticle(req.params, req.query)
-    .then(comments => res.send({ comments }))
+    .then(alreadyFormattedComments => res.send(alreadyFormattedComments))
     .catch(err => next(err));
 };
 
@@ -45,7 +45,6 @@ exports.postNewArticle = (req, res, next) => {
   createNewArticle(req.body)
     .then(article => res.status(201).send({ article }))
     .catch(err => {
-      //console.log(err);
       next(err);
     });
 };

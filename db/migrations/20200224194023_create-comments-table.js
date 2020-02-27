@@ -3,8 +3,6 @@ const users = require("./20200224160012_create-users-table.js");
 const articles = require("./20200224172431_create-articles-table.js");
 
 exports.up = function(knex) {
-  //console.log("In comments migrator")
-
   return knex.schema.createTable("comments", commentTable => {
     commentTable.increments("comment_id").primary();
     commentTable
@@ -18,8 +16,6 @@ exports.up = function(knex) {
     commentTable.integer("votes").defaultTo(0);
     commentTable.timestamp("created_at").defaultTo(knex.fn.now());
     commentTable.string("body", 2000).notNullable();
-
-    //console.log("Leaving comments migrator")
   });
 };
 

@@ -19,6 +19,8 @@ exports.fetchArticleData = (
     order = "desc",
     author,
     topic,
+    limit = 10,
+    p = 1,
     ...badUrlQueries
   }
 ) => {
@@ -91,11 +93,17 @@ exports.fetchArticleData = (
               articleData.forEach(
                 item => (item.comment_count = parseInt(item.comment_count))
               );
-              return articleData;
+
+              return {
+                articles: articleData.slice(p * limit - limit, p * limit),
+                total_count: articleData.length
+              }; // articleData is array
+
               // }
-            } else
+            } else {
               articleData.comment_count = parseInt(articleData.comment_count);
-            return articleData;
+            }
+            return articleData; // articleData is one article
           });
     });
 };
@@ -150,7 +158,13 @@ exports.createNewCommentOnArticle = (
 
 exports.fetchCommentsByArticle = (
   { article_id },
-  { sort_by = "created_at", order = "desc", ...badUrlQueries }
+  {
+    sort_by = "created_at",
+    order = "desc",
+    limit = 10,
+    p = 1,
+    ...badUrlQueries
+  }
 ) => {
   return connection
     .select("*")
@@ -176,7 +190,10 @@ exports.fetchCommentsByArticle = (
             // if (commentsArr.length === 0) {
             //   return Promise.reject({ status: 404, customStatus: "404a" });
             // } else {
-            return commentsArr;
+            return {
+              comments: commentsArr.slice(p * limit - limit, p * limit),
+              total_count: commentsArr.length
+            };
             // }
           });
     });
