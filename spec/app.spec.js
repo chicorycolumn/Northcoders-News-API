@@ -343,7 +343,7 @@ describe("/api", () => {
         });
     });
 
-    it("##GET 200 returns an array of article objects, page and limit specifiable", () => {
+    it("##GET 200 returns an array of article objects, limit specifiable", () => {
       return request(app)
         .get("/api/articles?limit=6")
         .expect(200)
@@ -413,7 +413,7 @@ describe("/api", () => {
           expect(res.body.articles[8].comment_count).to.equal(2);
         });
     });
-    it("GET 200 articles array is sorted by any valid column from articles table.", () => {
+    it("GET 200 articles array is sorted by any valid column from articles table, like topic.", () => {
       return request(app)
         .get("/api/articles?sort_by=topic")
         .expect(200)
@@ -501,6 +501,58 @@ describe("/api", () => {
           });
         });
     });
+    it("^^^GET 200 articles array is filtered by title where title is one word.", () => {
+      return request(app)
+        .get("/api/articles?title=Moustache")
+        .expect(200)
+        .then(res => {
+          expect(res.body.articles).to.be.an("Array");
+          expect(res.body.articles.length).to.not.equal(0);
+          res.body.articles.forEach(article =>
+            expect(article).to.have.all.keys([
+              "author",
+              "title",
+              "article_id",
+              "topic",
+              "created_at",
+              "votes",
+              "comment_count"
+            ])
+          );
+          expect(res.body.articles).to.be.sortedBy("created_at", {
+            descending: true
+          });
+          res.body.articles.forEach(article =>
+            expect(article.title).to.equal("Moustache")
+          );
+        });
+    });
+    it("^^^GET 200 articles array is filtered by title where title is many words.", () => {
+      return request(app)
+        .get("/api/articles?title=Am I a cat?")
+        .expect(200)
+        .then(res => {
+          expect(res.body.articles).to.be.an("Array");
+          expect(res.body.articles.length).to.not.equal(0);
+          res.body.articles.forEach(article =>
+            expect(article).to.have.all.keys([
+              "author",
+              "title",
+              "article_id",
+              "topic",
+              "created_at",
+              "votes",
+              "comment_count"
+            ])
+          );
+          expect(res.body.articles).to.be.sortedBy("created_at", {
+            descending: true
+          });
+          res.body.articles.forEach(article =>
+            expect(article.title).to.equal("Am I a cat?")
+          );
+        });
+    });
     it("GET 200 articles array is filtered by author.", () => {
       return request(app)
         .get("/api/articles?author=icellusedkars")
@@ -568,19 +620,85 @@ describe("/api", () => {
                 .get("/api/articles?liked_by=lurker")
                 .expect(200)
                 .then(res => {
-                  console.log(res.body.articles);
-                  expect(res.body.articles).to.eql({});
+                  expect(res.body.articles).to.eql([
+                    {
+                      comment_count: 13,
+                      author: "butter_bridge",
+                      title: "Living in the shadow of a great man",
+                      article_id: 1,
+                      votes: 100,
+                      topic: "mitch",
+                      created_at: "2018-11-15T12:21:54.171Z"
+                    },
+                    {
+                      comment_count: 0,
+                      author: "icellusedkars",
+                      title: "Eight pug gifs that remind me of mitch",
+                      article_id: 3,
+                      votes: 0,
+                      topic: "mitch",
+                      created_at: "2010-11-17T12:21:54.171Z"
+                    }
+                  ]);
                   //expect(res.body.articles.length).to.equal(11) //Pagination could interfere with this.
                 });
             });
         });
     });
-    it("GET 404b if nothing matches that ?query.", () => {
+    it(">>>>GET 200 articles array filtered by user who downvoted them.", () => {
+      return request(app)
+        .patch("/api/articles/1")
+        .send({ inc_votes: 1, liking_user: "butter_bridge" })
+        .expect(200)
+        .then(() => {
+          return request(app)
+            .patch("/api/articles/3")
+            .send({ inc_votes: -1, liking_user: "butter_bridge" })
+            .expect(200)
+            .then(() => {
+              return request(app)
+                .get("/api/articles?liked_by=butter_bridge&vote_direction=down")
+                .expect(200)
+                .then(res => {
+                  console.log(res.body.articles);
+                  expect(res.body.articles).to.eql([
+                    {
+                      comment_count: 0,
+                      author: "icellusedkars",
+                      title: "Eight pug gifs that remind me of mitch",
+                      article_id: 3,
+                      votes: 0,
+                      topic: "mitch",
+                      created_at: "2010-11-17T12:21:54.171Z"
+                    }
+                  ]);
+                  //expect(res.body.articles.length).to.equal(11) //Pagination could interfere with this.
+                });
+            });
+        });
+    });
+    it("GET 200 empty array if nothing matches that liked_by ?query.", () => {
+      return request(app)
+        .get("/api/articles?liked_by=NON_EXISTING_USER")
+        .expect(200)
+        .then(res => {
+          expect(res.body.articles).to.eql([]);
+        });
+    });
+    it("GET 200 returns empty array if, say the user specified in the query does indeed exist in the database, but they haven't upvoted/downvoted anything.", () => {
+      return request(app)
+        .get("/api/articles?liked_by=lurker")
+        .expect(200)
+        .then(res => {
+          expect(res.body.articles).to.eql([]);
+        });
+    });
+    it("GET 200 empty array if nothing matches that ?query.", () => {
       return request(app)
         .get("/api/articles?topic=NON_EXISTENT_TOPIC")
-        .expect(404)
+        .expect(200)
         .then(res => {
-          expect(res.body.msg).to.eql(myErrMsgs["404b"]);
+          expect(res.body.articles).to.eql([]);
         });
     });
     it("GET 200 returns empty array if, say the author specified in the query does indeed exist in the database, but no articles are associated with them.", () => {
