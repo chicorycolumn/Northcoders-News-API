@@ -131,25 +131,47 @@ exports.addVoteToArticleByUser = (
   { article_id },
   { inc_votes = 0, liking_user, ...badQueries }
 ) => {
-  console.log("********");
-  console.log(inc_votes, liking_user);
   // if (Object.keys(badQueries).length > 0) {
   //   return Promise.reject({ status: 400, customStatus: "400a" });
   // }
   if (inc_votes !== 1 && inc_votes !== -1) {
     return Promise.reject({ status: 400, customStatus: "400d" });
   }
-
   return connection
-    .insert({
-      user: liking_user,
-      article_id: article_id,
-      inc_votes: inc_votes
-    })
-    .into("users_articles_table")
-    .returning("*")
-    .then(resArr => {
-      return resArr[0];
+    .select("*")
+    .from("users_articles_table")
+    .where("user", liking_user)
+    .andWhere("article_id", article_id)
+
+    .then(rows => {
+      if (rows.length) {
+        if (
+          (rows[0].inc_votes === 1 && inc_votes === 1) ||
+          (rows[0].inc_votes === -1 && inc_votes === -1)
+        ) {
+          return Promise.reject({ status: 400 });
+        } else {
+          return connection("users_articles_table")
+            .where("user", liking_user)
+            .andWhere("article_id", article_id)
+            .increment("inc_votes", inc_votes)
+            .returning("*")
+            .then(rows => {
+              return rows[0];
+            });
+        }
+      } else
+        return connection
+          .insert({
+            user: liking_user,
+            article_id: article_id,
+            inc_votes: inc_votes
+          })
+          .into("users_articles_table")
+          .returning("*")
+          .then(resArr => {
+            return resArr[0];
+          });
     });
 };
 
@@ -227,6 +249,7 @@ exports.fetchArticleData = (
     order = "desc",
     author,
     topic,
+    liked_by,
     limit = 10,
     p = 1,
     minutes = 100000000, // This is just to pass tests, change to 10 as default.
@@ -238,12 +261,14 @@ exports.fetchArticleData = (
 
   return Promise.all([
     doesValueExistInTable(author, "username", "users"),
-    doesValueExistInTable(topic, "slug", "topics")
+    doesValueExistInTable(topic, "slug", "topics"),
+    doesValueExistInTable(liked_by, "liking_user", "users_articles_table")
   ])
     .then(promiseAllResults => {
       if (
         (author !== undefined && promiseAllResults[0] === false) ||
-        (topic !== undefined && promiseAllResults[1] === false)
+        (topic !== undefined && promiseAllResults[1] === false) ||
+        (liked_by !== undefined && promiseAllResults[2] === false)
       ) {
         return Promise.reject({ status: 404, customStatus: "404b" });
       }

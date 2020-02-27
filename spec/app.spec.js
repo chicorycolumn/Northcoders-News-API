@@ -553,6 +553,28 @@ describe("/api", () => {
           //expect(res.body.articles.length).to.equal(11) //Pagination could interfere with this.
         });
     });
+    it.only(">>>>GET 200 articles array filtered by user who upvoted them.", () => {
+      return request(app)
+        .patch("/api/articles/1")
+        .send({ inc_votes: 1, liking_user: "lurker" })
+        .expect(200)
+        .then(() => {
+          return request(app)
+            .patch("/api/articles/3")
+            .send({ inc_votes: 1, liking_user: "lurker" })
+            .expect(200)
+            .then(() => {
+              return request(app)
+                .get("/api/articles?liked_by=lurker")
+                .expect(200)
+                .then(res => {
+                  console.log(res.body.articles);
+                  expect(res.body.articles).to.eql({});
+                  //expect(res.body.articles.length).to.equal(11) //Pagination could interfere with this.
+                });
+            });
+        });
+    });
     it("GET 404b if nothing matches that ?query.", () => {
       return request(app)
         .get("/api/articles?topic=NON_EXISTENT_TOPIC")
@@ -909,7 +931,129 @@ describe("/api", () => {
           });
       });
 
-      it("PATCH 200 returns updated article with votes incremented according to request body", () => {
+      it("~~~PATCH 404 You cannot upvote from nonexistent user.", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: -1, liking_user: "NON_EXI_USER" })
+          .expect(404); // What is best error message?
+      });
+
+      it("~~~PATCH 400 User cannot submit a number greater 1 as a vote.", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: 2, liking_user: "butter_bridge" })
+          .expect(400); // What is best error message?
+      });
+
+      it("~~~PATCH 400 User cannot submit a number less than -1 as a vote.", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: -2, liking_user: "butter_bridge" })
+          .expect(400); // What is best error message?
+      });
+
+      it("~~~PATCH 400 User cannot upvote same article more than once.", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: 1, liking_user: "butter_bridge" })
+          .expect(200)
+          .then(res => {
+            return request(app)
+              .patch("/api/articles/1")
+              .send({ inc_votes: 1, liking_user: "butter_bridge" })
+              .expect(400); // What is best error message?
+          });
+      });
+
+      it("~~~PATCH 400 User cannot downvote same article more than once.", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: -1, liking_user: "butter_bridge" })
+          .expect(200)
+          .then(res => {
+            return request(app)
+              .patch("/api/articles/1")
+              .send({ inc_votes: -1, liking_user: "butter_bridge" })
+              .expect(400); // What is best error message?
+          });
+      });
+
+      it("~~~PATCH 400 User can negate their downvote with a subsequent upvote and then upvote again.", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: -1, liking_user: "butter_bridge" })
+          .expect(200)
+          .then(res => {
+            return request(app)
+              .patch("/api/articles/1")
+              .send({ inc_votes: 1, liking_user: "butter_bridge" })
+              .expect(200)
+              .then(res => {
+                return request(app)
+                  .patch("/api/articles/1")
+                  .send({ inc_votes: 1, liking_user: "butter_bridge" })
+                  .expect(200);
+              })
+              .then(res => {
+                return request(app)
+                  .patch("/api/articles/1")
+                  .send({ inc_votes: 1, liking_user: "butter_bridge" })
+                  .expect(400);
+              });
+          });
+      });
+
+      it("~~~PATCH 400 User can negate their upvote with a subsequent downvote and then downvote again.", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: 1, liking_user: "butter_bridge" })
+          .expect(200)
+          .then(res => {
+            return request(app)
+              .patch("/api/articles/1")
+              .send({ inc_votes: -1, liking_user: "butter_bridge" })
+              .expect(200)
+              .then(res => {
+                return request(app)
+                  .patch("/api/articles/1")
+                  .send({ inc_votes: -1, liking_user: "butter_bridge" })
+                  .expect(200);
+              })
+              .then(res => {
+                return request(app)
+                  .patch("/api/articles/1")
+                  .send({ inc_votes: -1, liking_user: "butter_bridge" })
+                  .expect(400);
+              });
+          });
+      });
+
+      it("~~~PATCH 400 User can negate their upvote with a subsequent downvote and then upvote again.", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: 1, liking_user: "butter_bridge" })
+          .expect(200)
+          .then(res => {
+            return request(app)
+              .patch("/api/articles/1")
+              .send({ inc_votes: -1, liking_user: "butter_bridge" })
+              .expect(200)
+              .then(res => {
+                return request(app)
+                  .patch("/api/articles/1")
+                  .send({ inc_votes: 1, liking_user: "butter_bridge" })
+                  .expect(200);
+              })
+              .then(res => {
+                return request(app)
+                  .patch("/api/articles/1")
+                  .send({ inc_votes: 1, liking_user: "butter_bridge" })
+                  .expect(400);
+              });
+          });
+      });
+
+      it("PATCH 200 ADMIN returns updated article with votes incremented according to request body", () => {
         return (
           request(app)
             .patch("/api/articles/1")
@@ -944,7 +1088,7 @@ describe("/api", () => {
             })
         );
       });
-      it("PATCH 200 returns updated article with votes decremented according to request body", () => {
+      it("PATCH 200 ADMIN returns updated article with votes decremented according to request body", () => {
         return (
           request(app)
             .patch("/api/articles/1")
@@ -979,7 +1123,7 @@ describe("/api", () => {
         );
       });
 
-      it("PATCH 200 returns unchanged item when empty request.", () => {
+      it("PATCH 200 ADMIN returns unchanged item when empty request.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({})
@@ -998,7 +1142,7 @@ describe("/api", () => {
           });
       });
 
-      it("PATCH 404a returns error when id valid but no correspond.", () => {
+      it("PATCH 404a ADMIN returns error when id valid but no correspond.", () => {
         return request(app)
           .patch("/api/articles/6666")
           .send({ inc_votes: 1000 })
@@ -1007,7 +1151,7 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["404a"]);
           });
       });
-      it("PATCH 400b returns error when id invalid.", () => {
+      it("PATCH 400b ADMIN returns error when id invalid.", () => {
         return request(app)
           .patch("/api/articles/INVALID_ID")
           .send({ inc_votes: 1000 })
@@ -1025,7 +1169,7 @@ describe("/api", () => {
       //       expect(res.body.msg).to.equal(myErrMsgs["400a"]);
       //     });
       // });
-      it("PATCH 400a returns error when missing fields, eg key mistyped in request.", () => {
+      it("PATCH 400a ADMIN returns error when missing fields, eg key mistyped in request.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votesssssssssssssssss: 1000 })
@@ -1034,7 +1178,7 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["400a"]);
           });
       });
-      it("PATCH 400d returns error when value is wrong type in request.", () => {
+      it("PATCH 400d ADMIN returns error when value is wrong type in request.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: "banana" })
@@ -1043,7 +1187,7 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["400d"]);
           });
       });
-      it("PATCH 400a returns error when request contains other values.", () => {
+      it("PATCH 400a ADMIN returns error when request contains other values.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: 5, name: "Henrietta" })
