@@ -11,6 +11,19 @@
     }
   },
 
+  "POST /api/topics": {
+    "description": "Posts a new topic.",
+    "queries": [],
+    "exampleRequest": {
+      "description": "the smell of a mown lawn",
+      "slug": "grass"
+    },
+    "exampleResponse": {
+      "description": "the smell of a mown lawn",
+      "slug": "grass"
+    }
+  },
+
   "GET /api/articles": {
     "description": "Serves an array of all articles.",
     "queries": ["author", "topic", "sort_by", "order"],
@@ -24,6 +37,57 @@
           "created_at": 1527695953341
         }
       ]
+    }
+  },
+
+  "POST /api/articles": {
+    "description": "Posts a new article.",
+    "queries": [],
+    "exampleRequest": {
+      "title": "Lord Rex",
+      "topic": "mitch",
+      "author": "donovan",
+      "body": "Lord Rex is a bad man."
+    },
+    "exampleResponse": {
+      "article": {
+        "title": "Lord Rex",
+        "topic": "mitch",
+        "author": "donovan",
+        "body": "Lord Rex is a bad man.",
+        "article_id": 200,
+        "created_at": 1527695953341,
+        "votes": 200
+      }
+    }
+  },
+
+  "GET /api/users": {
+    "description": "Serves an array of all users.",
+    "queries": [],
+    "exampleResponse": {
+      "topics": [
+        {
+          "username": "dahlia",
+          "name": "D Jones",
+          "avatar_url": "www.bing.co.uk/flower.jpeg"
+        }
+      ]
+    }
+  },
+
+  "POST /api/users": {
+    "description": "Posts a new user.",
+    "queries": [],
+    "exampleRequest": {
+      "username": "dahlia",
+      "name": "D Jones",
+      "avatar_url": "www.bing.co.uk/flower.jpeg"
+    },
+    "exampleResponse": {
+      "username": "dahlia",
+      "name": "D Jones",
+      "avatar_url": "www.bing.co.uk/flower.jpeg"
     }
   },
 
@@ -72,6 +136,12 @@
         "comment_count": 5
       }
     }
+  },
+
+  "DELETE /api/articles/:article_id": {
+    "description": "Deletes an article, by ID, returning no body.",
+    "queries": [],
+    "exampleResponse": {}
   },
 
   "GET /api/articles/:article_id/comments": {

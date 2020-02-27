@@ -6,12 +6,28 @@ An api for users to interact with the latest news regarding Northcoders, as well
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
+Even iunsturction for someone for HR team on.
+run this command in this terminal...
+you may need node indtalled...
+you have already been using vscod terminal is terminal
+
 ### Prerequisites
 
 What things you need to install the software and how to install them
 
 ```
-code editor, pg, knex, express ?????
+"dependencies": {
+    "express": "^4.17.1",
+    "knex": "^0.20.10",
+    "pg": "^7.18.2"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-sorted": "^0.2.0",
+    "mocha": "^7.0.1",
+    "sams-chai-sorted": "^1.0.2",
+    "supertest": "^4.0.2"
+  }
 ```
 
 ### Installing
@@ -21,7 +37,7 @@ A step by step series of examples that tell you how to get a development env run
 Say what the step will be
 
 ```
-download it from...heroku???? github????
+fork from...
 ```
 
 And repeat
@@ -36,7 +52,8 @@ End with an example of getting some data out of the system or using it for a lit
 
 Explain how to run the automated tests for this system
 
-Should I be uploading my spec files, and if so, should mocha chai supertest be non-dev dependencies????? or is this a dev project?????
+Make sure mocha chai
+RUn th spec file, in terminal vscode...
 
 ### Break down into end to end tests
 

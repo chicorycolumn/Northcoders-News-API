@@ -56,15 +56,17 @@ exports.fetchArticleData = (
           .modify(queryBuilder => {
             if (article_id !== undefined) {
               //Endpoint wants one article.
-              queryBuilder.where("articles.article_id", article_id).first(
-                "articles.author",
-                "articles.title",
-                "articles.article_id",
-                "articles.votes",
-                "articles.topic", // Not desired at endpoint.
-                "articles.body",
-                "articles.created_at"
-              );
+              queryBuilder
+                .where("articles.article_id", article_id)
+                .first(
+                  "articles.author",
+                  "articles.title",
+                  "articles.article_id",
+                  "articles.votes",
+                  "articles.topic",
+                  "articles.body",
+                  "articles.created_at"
+                );
             } else {
               // Endpoint wants many articles.
               queryBuilder.select(
