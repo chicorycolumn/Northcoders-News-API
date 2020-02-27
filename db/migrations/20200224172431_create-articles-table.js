@@ -11,12 +11,12 @@ exports.up = function(knex) {
       .string("topic")
       .notNullable()
       .references("topics.slug")
-      .onDelete("CASCADE"); // !!!!!!!!!!!
+      .onDelete("CASCADE");
     articleTable
       .string("author")
       .notNullable()
       .references("users.username")
-      .onDelete("CASCADE"); // !!!!!!!!!!!!
+      .onDelete("CASCADE");
     articleTable.timestamp("created_at").defaultTo(knex.fn.now());
   });
 };

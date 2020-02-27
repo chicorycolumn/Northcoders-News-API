@@ -332,6 +332,16 @@ describe("/api", () => {
           expect(res.body.total_count).to.equal(12);
         });
     });
+    it("##GET 200 returns an array of article objects, can ?query for articles from the last so many minutes.", () => {
+      return request(app)
+        .get("/api/articles?minutes=10000000")
+        .expect(200)
+        .then(res => {
+          expect(res.body.articles).to.be.an("Array");
+          expect(res.body.articles.length).to.equal(5);
+          expect(res.body.total_count).to.equal(5);
+        });
+    });
 
     it("##GET 200 returns an array of article objects, page and limit specifiable", () => {
       return request(app)

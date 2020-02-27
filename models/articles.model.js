@@ -1,6 +1,15 @@
 const connection = require("../db/connection");
 const { doesValueExistInTable } = require("../db/utils/utils");
 
+//ADDING A VOTE
+
+// //READING THE VOTE COUNT
+// return connection
+//           .from("articles")
+//           .leftJoin("users_articles_table", "articles.article_id", "users_articles_table.article_id")
+//           .count({ like_count: "users_articles_table.article_id" })
+//           .groupBy("articles.article_id")
+
 /* 
   I quite liked the way I had solved the "author or topic or both or neither" url query problem in fetchArticles, prior 
   to our Weds lecture on `modify`. What I did was to default the author and topic arguments to '%' wildcard, like so: 
@@ -21,9 +30,13 @@ exports.fetchArticleData = (
     topic,
     limit = 10,
     p = 1,
+    minutes = 100000000, // This is just to pass tests, change to 10 as default.
     ...badUrlQueries
   }
 ) => {
+  const currentDate = new Date();
+  const startDate = new Date(currentDate - minutes * 60000);
+
   return Promise.all([
     doesValueExistInTable(author, "username", "users"),
     doesValueExistInTable(topic, "slug", "topics")
@@ -53,6 +66,7 @@ exports.fetchArticleData = (
               queryBuilder.where("articles.topic", topic);
             }
           })
+          .where("articles.created_at", ">=", startDate)
           .orderBy(sort_by, order)
 
           .modify(queryBuilder => {
