@@ -1,5 +1,5 @@
 const connection = require("../db/connection");
-const { doesValueExistInTable } = require("../middleware/middleware");
+const { doesValueExistInTable } = require("../db/utils/utils");
 
 /* 
   I quite liked the way I had solved the "author or topic or both or neither" url query problem in fetchArticles, prior 
