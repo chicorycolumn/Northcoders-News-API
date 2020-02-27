@@ -18,7 +18,9 @@ exports.getUsers = (req, res, next) => {
 
 exports.postNewUser = (req, res, next) => {
   createNewUser(req.body)
-    .then(user => res.status(201).send({ user }))
+    .then(user => {
+      res.status(201).send({ user });
+    })
     .catch(err => {
       //console.log(err);
       next(err);

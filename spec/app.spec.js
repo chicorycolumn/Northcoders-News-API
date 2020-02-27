@@ -41,8 +41,8 @@ describe("/api", () => {
     });
   });
 
-  describe.only("/topics", () => {
-    it.only("**POST 201 responds with created topic.", () => {
+  describe("/topics", () => {
+    it("**POST 201 responds with created topic.", () => {
       return request(app)
         .post("/api/topics")
         .send({
@@ -59,7 +59,7 @@ describe("/api", () => {
         });
     });
 
-    it.only("**POST: 400a responds with error when missing fields", () => {
+    it("**POST: 400a responds with error when missing fields", () => {
       return request(app)
         .post("/api/topics")
         .send({})
@@ -69,7 +69,7 @@ describe("/api", () => {
         });
     });
 
-    it.only("**POST: 400a responds with error when failing schema validation", () => {
+    it("**POST: 400a responds with error when failing schema validation", () => {
       return request(app)
         .post("/api/topics")
         .send({
@@ -81,7 +81,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-    it.only("**POST: 400e responds with error when failing schema validation due to too long field", () => {
+    it("**POST: 400e responds with error when failing schema validation due to too long field", () => {
       return request(app)
         .post("/api/topics")
         .send({
@@ -94,7 +94,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400e"]);
         });
     });
-    it.only("**POST 400a returns error when request contains other values.", () => {
+    it("**POST 400a returns error when request contains other values.", () => {
       return request(app)
         .post("/api/topics")
         .send({
@@ -107,7 +107,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-    it.only("**Responds 405 if any other methods are used at this endpoint", () => {
+    it("**Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/topics";
       return Promise.all([request(app).del(url), request(app).patch(url)]).then(
         resArr => {
@@ -132,20 +132,18 @@ describe("/api", () => {
     });
     it("Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/topics";
-      return Promise.all([
-        request(app).del(url),
-        request(app).patch(url),
-        request(app).post(url)
-      ]).then(resArr => {
-        resArr.forEach(response => {
-          expect(405);
-          expect(response.body.msg).to.equal(myErrMsgs["405"]);
-        });
-      });
+      return Promise.all([request(app).del(url), request(app).patch(url)]).then(
+        resArr => {
+          resArr.forEach(response => {
+            expect(405);
+            expect(response.body.msg).to.equal(myErrMsgs["405"]);
+          });
+        }
+      );
     });
   });
   describe("/users", () => {
-    it.only("**POST 201 responds with created user.", () => {
+    it("**POST 201 responds with created user.", () => {
       return request(app)
         .post("/api/users")
         .send({
@@ -161,12 +159,12 @@ describe("/api", () => {
             "name"
           ]);
           expect(res.body.user.name).to.equal("lena");
-          expect(res.body.topic.avatar_url).to.equal("www.ask.com/crown.png");
-          expect(res.body.topic.username).to.equal("queen");
+          expect(res.body.user.avatar_url).to.equal("www.ask.com/crown.png");
+          expect(res.body.user.username).to.equal("queen");
         });
     });
 
-    it.only("**POST: 400a responds with error when missing fields", () => {
+    it("**POST: 400a responds with error when missing fields", () => {
       return request(app)
         .post("/api/users")
         .send({})
@@ -176,7 +174,7 @@ describe("/api", () => {
         });
     });
 
-    it.only("**POST: 400a responds with error when failing schema validation", () => {
+    it("**POST: 400a responds with error when failing schema validation", () => {
       return request(app)
         .post("/api/users")
         .send({
@@ -189,7 +187,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-    it.only("**POST: 400e responds with error when failing schema validation due to too long field", () => {
+    it("**POST: 400e responds with error when failing schema validation due to too long field", () => {
       return request(app)
         .post("/api/users")
         .send({
@@ -203,7 +201,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400e"]);
         });
     });
-    it.only("**POST 400a returns error when request contains other values.", () => {
+    it("**POST 400a returns error when request contains other values.", () => {
       return request(app)
         .post("/api/users")
         .send({
@@ -218,18 +216,18 @@ describe("/api", () => {
         });
     });
 
-    it.only("**GET 200 returns array of all users.", () => {
+    it("**GET 200 returns array of all users.", () => {
       return request(app)
         .get("/api/users")
         .expect(200)
         .then(res => {
-          expect(res.body.topics).to.be.an("Array");
-          res.body.topics.forEach(user =>
+          expect(res.body.users).to.be.an("Array");
+          res.body.users.forEach(user =>
             expect(user).to.have.all.keys(["username", "avatar_url", "name"])
           );
         });
     });
-    it.only("Responds 405 if any other methods are used at this endpoint", () => {
+    it("Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/users";
       return Promise.all([request(app).del(url), request(app).patch(url)]).then(
         resArr => {
@@ -363,7 +361,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-    it.only("**POST: 400a responds with error when failing schema validation due to too long field", () => {
+    it("**POST: 400a responds with error when failing schema validation due to too long field", () => {
       return request(app)
         .post("/api/articles")
         .send({
