@@ -15,6 +15,8 @@ exports.myErrMsgs = {
     "404a No such resource: Likely a valid but non-corresponding identifier in the url.",
   "404b":
     "404b No such resource: Nothing in our database fits your specifications.",
+  "404c":
+    "404c No such resource: You may be specified a non-existent value in the body of your request.",
 
   "405":
     "405 Method not allowed: You cannot make such a request (eg DELETE, POST, GET, etc) at this particular endpoint. You may have spelled the url wrong."
@@ -23,21 +25,9 @@ exports.myErrMsgs = {
 const myErrMsgs = exports.myErrMsgs;
 
 exports.pSQLErrorsHandler = (err, req, res, next) => {
-  //console.log(err);
   const wordsFromError = err.toString().split(" ");
 
-  if (
-    err.code === "22P02" &&
-    wordsFromError.slice(-1)[0] === '"NaN"'
-    // ||
-    // err.typeOfRequestThatWasMade === "POST"
-
-    // ||
-    // /invalid\sinput\ssyntax\sfor\sinteger/.test(wordsFromError.join(" "))
-
-    // ||
-    //   wordsFromError.includes("integer:")
-  ) {
+  if (err.code === "22P02" && wordsFromError.slice(-1)[0] === '"NaN"') {
     res.status(400).send({ msg: myErrMsgs["400d"] });
   }
 
@@ -45,13 +35,12 @@ exports.pSQLErrorsHandler = (err, req, res, next) => {
     "42703": { status: 400, msg: myErrMsgs["400c"] }, // empty obj
     //User tried to filter by a nonexistent column, in the url query.
 
+    "23503": { status: 404, msg: myErrMsgs["404c"] }, // null
+    //User entered POST request with a key referencing an author/topic/etc that doesn't exist.
+
     "23502": { status: 400, msg: myErrMsgs["400a"] }, // null
     //User entered empty object for POST request.
     //User entered object with wrong keys for POST request.
-
-    // "my-custom-code-400a": { status: 400, msg: myErrMsgs["400a"] },
-    // //User entered empty object for PATCH request.
-    // //User entered object with wrong keys for POST request.
 
     "22P02": { status: 400, msg: myErrMsgs["400b"] },
     //User entered banana as :article_id .

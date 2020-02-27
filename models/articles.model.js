@@ -133,7 +133,16 @@ exports.createNewCommentOnArticle = (
   if (Object.keys(unnecessaryKeys).length) {
     return Promise.reject({ status: 400, customStatus: "400a" });
   }
-
+  // return Promise.all([
+  //   doesValueExistInTable(username, "username", "users"),
+  //   doesValueExistInTable(article_id, "article_id", "articles")
+  // ])
+  //   .then(res => {
+  //     // if (username && !res[0] && res[1]) {
+  //     //   return Promise.reject({ status: 404, customStatus: "404a" });
+  //     // }
+  //   })
+  // .then(() => {
   return connection
     .select("*")
     .from("articles")
@@ -154,6 +163,7 @@ exports.createNewCommentOnArticle = (
           return commentArr[0];
         });
     });
+  // });
 };
 
 exports.fetchCommentsByArticle = (

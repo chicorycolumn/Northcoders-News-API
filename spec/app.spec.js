@@ -120,7 +120,7 @@ describe("/api", () => {
     });
 
     //Topics endpoint does not currently accept queries.
-    // it.only("##GET 200 returns an array of topic objects, limited to 10 items by default, starting page 1 by default", () => {
+    // it("##GET 200 returns an array of topic objects, limited to 10 items by default, starting page 1 by default", () => {
     //   return request(app)
     //     .get("/api/topics")
     //     .expect(200)
@@ -131,7 +131,7 @@ describe("/api", () => {
     //     });
     // });
 
-    // it.only("##GET 200 returns an array of topic objects, page and limit specifiable", () => {
+    // it("##GET 200 returns an array of topic objects, page and limit specifiable", () => {
     //   return request(app)
     //     .get("/api/topics?limit=6")
     //     .expect(200)
@@ -142,7 +142,7 @@ describe("/api", () => {
     //     });
     // });
 
-    // it.only("##GET 200 returns an array of comment objects, page and limit specifiable", () => {
+    // it("##GET 200 returns an array of comment objects, page and limit specifiable", () => {
     //   return request(app)
     //     .get("/api/topics?limit=6&p=1")
     //     .expect(200)
@@ -597,13 +597,13 @@ describe("/api", () => {
       );
     });
 
-    it("**POST 201 responds with created article.", () => {
+    it("***POST 201 responds with created article.", () => {
       return request(app)
         .post("/api/articles")
         .send({
           title: "Lord Rex",
           topic: "mitch",
-          author: "donovan",
+          author: "butter_bridge",
           body: "Lord Rex is a bad man."
         })
         .expect(201)
@@ -617,7 +617,7 @@ describe("/api", () => {
             "created_at",
             "votes"
           ]);
-          expect(res.body.article.author).to.equal("donovan");
+          expect(res.body.article.author).to.equal("butter_bridge");
           expect(res.body.article.article_id).to.equal(13);
           expect(res.body.article.body).to.equal("Lord Rex is a bad man.");
           expect(res.body.article.topic).to.equal("mitch");
@@ -625,13 +625,13 @@ describe("/api", () => {
         });
     });
 
-    it("**POST 201 responds with created article, including can specify how many votes.", () => {
+    it("****POST 201 responds with created article, including can specify how many votes.", () => {
       return request(app)
         .post("/api/articles")
         .send({
           title: "Lord Rex",
           topic: "mitch",
-          author: "donovan",
+          author: "butter_bridge",
           body: "Lord Rex is a bad man.",
           votes: 12
         })
@@ -646,11 +646,43 @@ describe("/api", () => {
             "created_at",
             "votes"
           ]);
-          expect(res.body.article.author).to.equal("donovan");
+          expect(res.body.article.author).to.equal("butter_bridge");
           expect(res.body.article.article_id).to.equal(13);
           expect(res.body.article.body).to.equal("Lord Rex is a bad man.");
           expect(res.body.article.topic).to.equal("mitch");
           expect(res.body.article.votes).to.equal(12);
+        });
+    });
+
+    it("****POST 404c responds error if topic specified in request body not exist.", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          title: "Lord Rex",
+          topic: "NON_EXISTENT_TOPIC",
+          author: "butter_bridge",
+          body: "Lord Rex is a bad man.",
+          votes: 12
+        })
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.eql(myErrMsgs["404c"]);
+        });
+    });
+
+    it("****POST 404c responds error if author specified in request body not exist", () => {
+      return request(app)
+        .post("/api/articles")
+        .send({
+          title: "Lord Rex",
+          topic: "mitch",
+          author: "NON_EXISTENT_AUTHOR",
+          body: "Lord Rex is a bad man.",
+          votes: 12
+        })
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.eql(myErrMsgs["404c"]);
         });
     });
 
@@ -736,6 +768,17 @@ describe("/api", () => {
     });
 
     describe("/:articleid", () => {
+      it("###DELETE 204 all comments associated with that article are deleted too!", () => {
+        return request(app)
+          .del("/api/articles/1")
+          .expect(204)
+          .then(() => {
+            return request(app)
+              .get("/api/articles/1/comments")
+              .expect(404); // for id valid but nonexistent!
+          });
+      });
+
       it("**DELETE 204 returns no body after sucessful deletion", () => {
         return request(app)
           .del("/api/articles/3")
@@ -1116,29 +1159,31 @@ describe("/api", () => {
         it("POST 201 responds with created comment.", () => {
           return request(app)
             .post("/api/articles/5/comments")
-            .send({ username: "Genghis", body: "Not enough pillaging" })
+            .send({ username: "butter_bridge", body: "I like butter" })
             .expect(201)
 
             .then(res => {
               delete res.body.comment.created_at;
               expect(res.body.comment).to.eql({
                 comment_id: 19,
-                author: "Genghis",
+                author: "butter_bridge",
                 article_id: 5,
                 votes: 0,
                 //created_at: '2020-02-25T14:23:37.689Z',
-                body: "Not enough pillaging"
+                body: "I like butter"
               });
             });
-
-          //In case the above then statement is excessive, this below is a more succinct one:
-          // .then(res => {
-          //     expect(res.body.comment).to.have.all.keys(['comment_id', 'author', 'article_id', 'votes', 'body', 'created_at'])
-          //     expect(res.body.comment.author).to.equal('Genghis')
-          //     expect(res.body.comment.article_id).to.equal(5)
-          // })
         });
-        it("POST: 400a responds with error when missing fields", () => {
+        it("POST 404c if submitting comment with author that doesn't exist!", () => {
+          return request(app)
+            .post("/api/articles/5/comments")
+            .send({ username: "Genghis", body: "Not enough pillaging" })
+            .expect(404)
+            .then(res => {
+              expect(res.body.msg).to.eql(myErrMsgs["404c"]);
+            });
+        });
+        it("--POST: 400a responds with error when missing fields", () => {
           return request(app)
             .post("/api/articles/5/comments")
             .send({})
@@ -1169,7 +1214,7 @@ describe("/api", () => {
               expect(res.body.msg).to.equal(myErrMsgs["404a"]);
             });
         });
-        it("POST 400b if invalid id.", () => {
+        it("--POST 400b if invalid id.", () => {
           return request(app)
             .post("/api/articles/INVALID_ID/comments")
             .send({ username: "Genghis", body: "Not enough pillaging" })
