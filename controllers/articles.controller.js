@@ -4,16 +4,42 @@ const {
   createNewCommentOnArticle,
   fetchCommentsByArticle,
   createNewArticle,
-  deleteArticleByID
+  deleteArticleByID,
+  addVoteToArticleByUser,
+  updateArticleDetails
 } = require("../models/articles.model");
 
 exports.getArticles = (req, res, next) => {
   fetchArticleData(req.params, req.query)
-    .then(articlesAlreadyFormatted => {
-      res.send(articlesAlreadyFormatted);
+    .then(alreadyFormattedArticles => {
+      res.send(alreadyFormattedArticles);
     })
     .catch(err => next(err));
 };
+
+// exports.patchVoteToArticleByUser = (req, res, next) => {
+//   addVoteToArticleByUser(req.params, req.query)
+//     .then(articlesAlreadyFormatted => {
+//       res.send(articlesAlreadyFormatted);
+//     })
+//     .catch(err => next(err));
+// };
+
+exports.patchArticleDetails = (req, res, next) => {
+  updateArticleDetails(req.params, req.body, req.query)
+    .then(article => {
+      res.send({ article });
+    })
+    .catch(err => {
+      next(err);
+    });
+};
+
+// exports.patchArticleVotes = (req, res, next) => {
+//   updateArticleVotes(req.params, req.body)
+//     .then(article => res.send({ article }))
+//     .catch(err => next(err));
+// };
 
 exports.getArticleByID = (req, res, next) => {
   fetchArticleData(req.params, req.query)
@@ -21,12 +47,6 @@ exports.getArticleByID = (req, res, next) => {
     .catch(err => {
       next(err);
     });
-};
-
-exports.patchArticleVotes = (req, res, next) => {
-  updateArticleVotes(req.params, req.body)
-    .then(article => res.send({ article }))
-    .catch(err => next(err));
 };
 
 exports.postNewCommentOnArticle = (req, res, next) => {

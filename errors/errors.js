@@ -6,7 +6,7 @@ exports.myErrMsgs = {
     "400b Bad request: The url may have an invalid indentifier. Alternately, if this is a POST request, you may have bad data type in request.",
   "400c": "400c Bad request: At least one query in the url is invalid.",
   "400d":
-    '400d Bad request: Re the fields in body of request, likely you entered wrong data type eg {age: "banana"}',
+    '400d Bad request: Re the fields in body of request, likely you entered wrong data type eg {age: "banana"}, or a number outside range.',
   "400e":
     "400e Bad request: Re the fields in body of request, there was some schema error, such as you entering too many characters for a field.",
 

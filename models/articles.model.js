@@ -21,6 +21,89 @@ const { doesValueExistInTable } = require("../db/utils/utils");
   .where('topic', 'like', topic).andWhere('author', 'like', author)
 */
 
+//THE FUNCTION THAT ROUTES ALL PATCH REQUESTS TO THIS ENDPOINT:
+exports.updateArticleDetails = (
+  { article_id },
+  { body, inc_votes, author, liking_user, ...badQueries }
+) => {
+  if (Object.keys(badQueries).length > 0) {
+    return Promise.reject({ status: 400, customStatus: "400a" });
+  } else if (
+    [body, inc_votes, author, liking_user].every(arg => arg === undefined)
+  ) {
+    return connection
+      .select("*")
+      .from("articles")
+      .where("article_id", article_id)
+      .then(articleArr => {
+        return articleArr[0];
+      });
+  } else if (inc_votes !== undefined && liking_user !== undefined) {
+    return this.addVoteToArticleByUser(
+      { article_id },
+      { inc_votes, liking_user }
+    );
+  } else if (inc_votes !== undefined) {
+    return this.updateArticleVotes({ article_id }, { inc_votes });
+  }
+};
+
+//THE FUNCTIONS THAT ARE ROUTED TO:
+exports.addVoteToArticleByUser = (
+  { article_id },
+  { inc_votes = 0, liking_user, ...badQueries }
+) => {
+  // if (Object.keys(badQueries).length > 0) {
+  //   return Promise.reject({ status: 400, customStatus: "400a" });
+  // }
+  if (inc_votes !== 1 && inc_votes !== -1) {
+    return Promise.reject({ status: 400, customStatus: "400d" });
+  }
+
+  return connection
+    .insert({
+      username: liking_user,
+      article_id: article_id,
+      inc_votes: inc_votes
+    })
+    .into("users_articles_table")
+    .returning("*")
+    .then(resArr => {
+      return resArr[0];
+    });
+};
+
+exports.updateArticleVotes = (
+  { article_id },
+  { inc_votes = 0, ...badQueries }
+) => {
+  // if (Object.keys(badQueries).length > 0) {
+  //   return Promise.reject({ status: 400, customStatus: "400a" });
+  // }
+  return connection("articles")
+    .where({ article_id: article_id })
+    .increment("votes", inc_votes)
+    .returning("*")
+    .then(articles => {
+      if (articles.length === 0) {
+        return Promise.reject({ status: 404, customStatus: "404a" });
+      } else return articles[0];
+    });
+};
+/*********************************************************** */
+/*********************************************************** */
+/*********************************************************** */
+/*********************************************************** */
+/*********************************************************** */
+/****************** OH SAY CAN YOU SEE ********************* */
+/*********************************************************** */
+/*********************************************************** */
+/****************BY THE DAWN'S EARLY LIGHT****************** */
+/*********************************************************** */
+/*********************************************************** */
+/*********************************************************** */
+/*********************************************************** */
+
 exports.fetchArticleData = (
   { article_id },
   {
@@ -119,24 +202,6 @@ exports.fetchArticleData = (
             }
             return articleData; // articleData is one article
           });
-    });
-};
-
-exports.updateArticleVotes = (
-  { article_id },
-  { inc_votes = 0, ...badQueries }
-) => {
-  if (Object.keys(badQueries).length > 0) {
-    return Promise.reject({ status: 400, customStatus: "400a" });
-  }
-  return connection("articles")
-    .where({ article_id: article_id })
-    .increment("votes", inc_votes)
-    .returning("*")
-    .then(articles => {
-      if (articles.length === 0) {
-        return Promise.reject({ status: 404, customStatus: "404a" });
-      } else return articles[0];
     });
 };
 
