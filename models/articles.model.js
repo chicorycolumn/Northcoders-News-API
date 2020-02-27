@@ -7,7 +7,7 @@ const { doesValueExistInTable } = require("../db/utils/utils");
 // return connection
 //           .from("articles")
 //           .leftJoin("users_articles_table", "articles.article_id", "users_articles_table.article_id")
-//           .count({ like_count: "users_articles_table.article_id" })
+//           .count({ vote_count: "users_articles_table.article_id" })
 //           .groupBy("articles.article_id")
 
 /* 
@@ -24,7 +24,7 @@ const { doesValueExistInTable } = require("../db/utils/utils");
 //THE FUNCTION THAT ROUTES ALL PATCH REQUESTS TO THIS ENDPOINT:
 exports.updateArticleDetails = (
   { article_id },
-  { body, inc_votes, title, author, liking_user, topic, ...badKeys },
+  { body, inc_votes, title, author, voting_user, topic, ...badKeys },
   urlQueries
 ) => {
   // Are there excessive keys in request body?
@@ -33,24 +33,26 @@ exports.updateArticleDetails = (
   }
 
   // Should we invoke Add Votes To Article By User?
-  else if (inc_votes !== undefined && liking_user !== undefined) {
+  else if (inc_votes !== undefined && voting_user !== undefined) {
     return this.addVoteToArticleByUser(
       { article_id },
-      { inc_votes, liking_user }
+      { inc_votes, voting_user }
     );
   }
 
   // Should we invoke Update Article Votes?
-  else if (inc_votes !== undefined && liking_user === undefined) {
-    return this.updateArticleVotes({ article_id }, { inc_votes, liking_user });
+  else if (inc_votes !== undefined && voting_user === undefined) {
+    return this.updateArticleVotes({ article_id }, { inc_votes, voting_user });
   }
 
   // We will modify article details. Note, you cannot do both this and Add Votes To Article By User.
   // Note, this replaces the Update Article Votes function.
-  else if (liking_user === undefined) {
+  else if (voting_user === undefined) {
+    console.log("here!");
     return connection
       .select("*")
       .from("articles")
+      .where("article_id", article_id)
       .modify(queryBuilder => {
         // [body, topic, title, author].forEach(arg => {
         //   if (arg !== undefined) {
@@ -66,7 +68,7 @@ exports.updateArticleDetails = (
         if (inc_votes !== undefined) {
           queryBuilder = queryBuilder.increment("votes", inc_votes);
         }
-        if (author !== undefined) {
+        if (body !== undefined) {
           queryBuilder = queryBuilder.update({
             body: body
           });
@@ -108,10 +110,10 @@ exports.updateArticleDetails = (
       });
 
   //
-  // else if (inc_votes !== undefined && liking_user !== undefined) {
+  // else if (inc_votes !== undefined && voting_user !== undefined) {
   //   return this.addVoteToArticleByUser(
   //     { article_id },
-  //     { inc_votes, liking_user }
+  //     { inc_votes, voting_user }
   //   );
   // }
 
@@ -129,7 +131,7 @@ exports.updateArticleDetails = (
 //THE FUNCTIONS THAT ARE ROUTED TO:
 exports.addVoteToArticleByUser = (
   { article_id },
-  { inc_votes = 0, liking_user, ...badQueries }
+  { inc_votes = 0, voting_user, ...badQueries }
 ) => {
   // if (Object.keys(badQueries).length > 0) {
   //   return Promise.reject({ status: 400, customStatus: "400a" });
@@ -140,7 +142,7 @@ exports.addVoteToArticleByUser = (
   return connection
     .select("*")
     .from("users_articles_table")
-    .where("liking_user", liking_user)
+    .where("voting_user", voting_user)
     .andWhere("article_id", article_id)
 
     .then(rows => {
@@ -152,7 +154,7 @@ exports.addVoteToArticleByUser = (
           return Promise.reject({ status: 400 });
         } else {
           return connection("users_articles_table")
-            .where("liking_user", liking_user)
+            .where("voting_user", voting_user)
             .andWhere("article_id", article_id)
             .increment("inc_votes", inc_votes)
             .returning("*")
@@ -163,7 +165,7 @@ exports.addVoteToArticleByUser = (
       } else
         return connection
           .insert({
-            liking_user: liking_user,
+            voting_user: voting_user,
             article_id: article_id,
             inc_votes: inc_votes
           })
@@ -250,7 +252,7 @@ exports.fetchArticleData = (
     author,
     topic,
     title,
-    liked_by,
+    voted_by,
     vote_direction = "up",
     limit = 10,
     p = 1,
@@ -265,13 +267,13 @@ exports.fetchArticleData = (
     doesValueExistInTable(author, "username", "users"),
     doesValueExistInTable(topic, "slug", "topics"),
     doesValueExistInTable(title, "title", "articles"),
-    doesValueExistInTable(liked_by, "liking_user", "users_articles_table")
+    doesValueExistInTable(voted_by, "voting_user", "users_articles_table")
   ])
     .then(promiseAllResults => {
       if (
         (author !== undefined && promiseAllResults[0] === false) ||
         (topic !== undefined && promiseAllResults[1] === false) ||
-        (liked_by !== undefined && promiseAllResults[2] === false) ||
+        (voted_by !== undefined && promiseAllResults[2] === false) ||
         (title !== undefined && promiseAllResults[3] === false)
       ) {
         // return Promise.reject({ status: 404, customStatus: "404b" });
@@ -290,23 +292,23 @@ exports.fetchArticleData = (
             //*************** */
 
             .modify(queryBuilder => {
-              if (liked_by !== undefined && vote_direction === "up") {
+              if (voted_by !== undefined && vote_direction === "up") {
                 queryBuilder = queryBuilder
                   .rightJoin(
                     "users_articles_table",
                     "articles.article_id",
                     "users_articles_table.article_id"
                   )
-                  .where("liking_user", liked_by)
+                  .where("voting_user", voted_by)
                   .andWhere("inc_votes", 1);
-              } else if (liked_by !== undefined && vote_direction === "down") {
+              } else if (voted_by !== undefined && vote_direction === "down") {
                 queryBuilder = queryBuilder
                   .rightJoin(
                     "users_articles_table",
                     "articles.article_id",
                     "users_articles_table.article_id"
                   )
-                  .where("liking_user", liked_by)
+                  .where("voting_user", voted_by)
                   .andWhere("inc_votes", -1);
               }
             })

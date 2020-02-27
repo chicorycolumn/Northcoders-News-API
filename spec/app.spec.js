@@ -608,16 +608,16 @@ describe("/api", () => {
     it(">>>>GET 200 articles array filtered by user who upvoted them.", () => {
       return request(app)
         .patch("/api/articles/1")
-        .send({ inc_votes: 1, liking_user: "lurker" })
+        .send({ inc_votes: 1, voting_user: "lurker" })
         .expect(200)
         .then(() => {
           return request(app)
             .patch("/api/articles/3")
-            .send({ inc_votes: 1, liking_user: "lurker" })
+            .send({ inc_votes: 1, voting_user: "lurker" })
             .expect(200)
             .then(() => {
               return request(app)
-                .get("/api/articles?liked_by=lurker")
+                .get("/api/articles?voted_by=lurker")
                 .expect(200)
                 .then(res => {
                   expect(res.body.articles).to.eql([
@@ -648,16 +648,16 @@ describe("/api", () => {
     it(">>>>GET 200 articles array filtered by user who downvoted them.", () => {
       return request(app)
         .patch("/api/articles/1")
-        .send({ inc_votes: 1, liking_user: "butter_bridge" })
+        .send({ inc_votes: 1, voting_user: "butter_bridge" })
         .expect(200)
         .then(() => {
           return request(app)
             .patch("/api/articles/3")
-            .send({ inc_votes: -1, liking_user: "butter_bridge" })
+            .send({ inc_votes: -1, voting_user: "butter_bridge" })
             .expect(200)
             .then(() => {
               return request(app)
-                .get("/api/articles?liked_by=butter_bridge&vote_direction=down")
+                .get("/api/articles?voted_by=butter_bridge&vote_direction=down")
                 .expect(200)
                 .then(res => {
                   console.log(res.body.articles);
@@ -677,9 +677,9 @@ describe("/api", () => {
             });
         });
     });
-    it("GET 200 empty array if nothing matches that liked_by ?query.", () => {
+    it("GET 200 empty array if nothing matches that voted_by ?query.", () => {
       return request(app)
-        .get("/api/articles?liked_by=NON_EXISTING_USER")
+        .get("/api/articles?voted_by=NON_EXISTING_USER")
         .expect(200)
         .then(res => {
           expect(res.body.articles).to.eql([]);
@@ -687,7 +687,7 @@ describe("/api", () => {
     });
     it("GET 200 returns empty array if, say the user specified in the query does indeed exist in the database, but they haven't upvoted/downvoted anything.", () => {
       return request(app)
-        .get("/api/articles?liked_by=lurker")
+        .get("/api/articles?voted_by=lurker")
         .expect(200)
         .then(res => {
           expect(res.body.articles).to.eql([]);
@@ -1024,25 +1024,25 @@ describe("/api", () => {
       it("~~~PATCH 200 Adds row to junction table re re user adding a vote to an article.", () => {
         return request(app)
           .patch("/api/articles/1")
-          .send({ inc_votes: 1, liking_user: "butter_bridge" })
+          .send({ inc_votes: 1, voting_user: "butter_bridge" })
           .expect(200)
           .then(res => {
             expect(res.body.article).to.eql({
-              liking_user: "butter_bridge",
+              voting_user: "butter_bridge",
               article_id: 1,
               inc_votes: 1
             });
           });
       });
 
-      it("~~~PATCH 200 Adds row to junction table re re user adding a negative vote to an article.", () => {
+      it("~~~PATCH 200 Adds row to junction table re user adding a negative vote to an article.", () => {
         return request(app)
           .patch("/api/articles/1")
-          .send({ inc_votes: -1, liking_user: "butter_bridge" })
+          .send({ inc_votes: -1, voting_user: "butter_bridge" })
           .expect(200)
           .then(res => {
             expect(res.body.article).to.eql({
-              liking_user: "butter_bridge",
+              voting_user: "butter_bridge",
               article_id: 1,
               inc_votes: -1
             });
@@ -1052,33 +1052,33 @@ describe("/api", () => {
       it("~~~PATCH 404 You cannot upvote from nonexistent user.", () => {
         return request(app)
           .patch("/api/articles/1")
-          .send({ inc_votes: -1, liking_user: "NON_EXI_USER" })
+          .send({ inc_votes: -1, voting_user: "NON_EXI_USER" })
           .expect(404); // What is best error message?
       });
 
       it("~~~PATCH 400 User cannot submit a number greater 1 as a vote.", () => {
         return request(app)
           .patch("/api/articles/1")
-          .send({ inc_votes: 2, liking_user: "butter_bridge" })
+          .send({ inc_votes: 2, voting_user: "butter_bridge" })
           .expect(400); // What is best error message?
       });
 
       it("~~~PATCH 400 User cannot submit a number less than -1 as a vote.", () => {
         return request(app)
           .patch("/api/articles/1")
-          .send({ inc_votes: -2, liking_user: "butter_bridge" })
+          .send({ inc_votes: -2, voting_user: "butter_bridge" })
           .expect(400); // What is best error message?
       });
 
       it("~~~PATCH 400 User cannot upvote same article more than once.", () => {
         return request(app)
           .patch("/api/articles/1")
-          .send({ inc_votes: 1, liking_user: "butter_bridge" })
+          .send({ inc_votes: 1, voting_user: "butter_bridge" })
           .expect(200)
           .then(res => {
             return request(app)
               .patch("/api/articles/1")
-              .send({ inc_votes: 1, liking_user: "butter_bridge" })
+              .send({ inc_votes: 1, voting_user: "butter_bridge" })
               .expect(400); // What is best error message?
           });
       });
@@ -1086,12 +1086,12 @@ describe("/api", () => {
       it("~~~PATCH 400 User cannot downvote same article more than once.", () => {
         return request(app)
           .patch("/api/articles/1")
-          .send({ inc_votes: -1, liking_user: "butter_bridge" })
+          .send({ inc_votes: -1, voting_user: "butter_bridge" })
           .expect(200)
           .then(res => {
             return request(app)
               .patch("/api/articles/1")
-              .send({ inc_votes: -1, liking_user: "butter_bridge" })
+              .send({ inc_votes: -1, voting_user: "butter_bridge" })
               .expect(400); // What is best error message?
           });
       });
@@ -1099,23 +1099,23 @@ describe("/api", () => {
       it("~~~PATCH 400 User can negate their downvote with a subsequent upvote and then upvote again.", () => {
         return request(app)
           .patch("/api/articles/1")
-          .send({ inc_votes: -1, liking_user: "butter_bridge" })
+          .send({ inc_votes: -1, voting_user: "butter_bridge" })
           .expect(200)
           .then(res => {
             return request(app)
               .patch("/api/articles/1")
-              .send({ inc_votes: 1, liking_user: "butter_bridge" })
+              .send({ inc_votes: 1, voting_user: "butter_bridge" })
               .expect(200)
               .then(res => {
                 return request(app)
                   .patch("/api/articles/1")
-                  .send({ inc_votes: 1, liking_user: "butter_bridge" })
+                  .send({ inc_votes: 1, voting_user: "butter_bridge" })
                   .expect(200);
               })
               .then(res => {
                 return request(app)
                   .patch("/api/articles/1")
-                  .send({ inc_votes: 1, liking_user: "butter_bridge" })
+                  .send({ inc_votes: 1, voting_user: "butter_bridge" })
                   .expect(400);
               });
           });
@@ -1124,23 +1124,23 @@ describe("/api", () => {
       it("~~~PATCH 400 User can negate their upvote with a subsequent downvote and then downvote again.", () => {
         return request(app)
           .patch("/api/articles/1")
-          .send({ inc_votes: 1, liking_user: "butter_bridge" })
+          .send({ inc_votes: 1, voting_user: "butter_bridge" })
           .expect(200)
           .then(res => {
             return request(app)
               .patch("/api/articles/1")
-              .send({ inc_votes: -1, liking_user: "butter_bridge" })
+              .send({ inc_votes: -1, voting_user: "butter_bridge" })
               .expect(200)
               .then(res => {
                 return request(app)
                   .patch("/api/articles/1")
-                  .send({ inc_votes: -1, liking_user: "butter_bridge" })
+                  .send({ inc_votes: -1, voting_user: "butter_bridge" })
                   .expect(200);
               })
               .then(res => {
                 return request(app)
                   .patch("/api/articles/1")
-                  .send({ inc_votes: -1, liking_user: "butter_bridge" })
+                  .send({ inc_votes: -1, voting_user: "butter_bridge" })
                   .expect(400);
               });
           });
@@ -1149,96 +1149,139 @@ describe("/api", () => {
       it("~~~PATCH 400 User can negate their upvote with a subsequent downvote and then upvote again.", () => {
         return request(app)
           .patch("/api/articles/1")
-          .send({ inc_votes: 1, liking_user: "butter_bridge" })
+          .send({ inc_votes: 1, voting_user: "butter_bridge" })
           .expect(200)
           .then(res => {
             return request(app)
               .patch("/api/articles/1")
-              .send({ inc_votes: -1, liking_user: "butter_bridge" })
+              .send({ inc_votes: -1, voting_user: "butter_bridge" })
               .expect(200)
               .then(res => {
                 return request(app)
                   .patch("/api/articles/1")
-                  .send({ inc_votes: 1, liking_user: "butter_bridge" })
+                  .send({ inc_votes: 1, voting_user: "butter_bridge" })
                   .expect(200);
               })
               .then(res => {
                 return request(app)
                   .patch("/api/articles/1")
-                  .send({ inc_votes: 1, liking_user: "butter_bridge" })
+                  .send({ inc_votes: 1, voting_user: "butter_bridge" })
                   .expect(400);
               });
           });
       });
 
+      it.only("PATCH 200 Returns updated article body.", () => {
+        return request(app)
+          .patch("/api/articles/4")
+          .send({ body: "Get my green pak choi, squire!" })
+          .expect(200)
+          .then(res => {
+            console.log(res.body.article);
+            expect(res.body.article.body).to.equal(
+              "Get my green pak choi, squire!"
+            );
+            expect(res.body.article.title).to.equal("Student SUES Mitch!");
+            expect(res.body.article).to.have.all.keys([
+              "article_id",
+              "title",
+              "topic",
+              "author",
+              "body",
+              "created_at",
+              "votes"
+            ]);
+          });
+      });
+
+      it.only("PATCH 200 Returns updated article title.", () => {
+        return request(app)
+          .patch("/api/articles/5")
+          .send({ title: "Lick this tree of oak and grain." })
+          .expect(200)
+          .then(res => {
+            console.log(res.body.article);
+            expect(res.body.article.article_id).to.equal(5);
+            expect(res.body.article.title).to.equal(
+              "Lick this tree of oak and grain."
+            );
+            expect(res.body.article).to.have.all.keys([
+              "article_id",
+              "title",
+              "topic",
+              "author",
+              "body",
+              "created_at",
+              "votes"
+            ]);
+          });
+      });
+
+      it.only("PATCH 200 Returns updated article author.", () => {
+        return request(app)
+          .patch("/api/articles/2")
+          .send({ author: "lurker" })
+          .expect(200)
+          .then(res => {
+            console.log(res.body.article);
+            expect(res.body.article.title).to.equal(
+              "Sony Vaio; or, The Laptop"
+            );
+            expect(res.body.article.author).to.equal("lurker");
+            expect(res.body.article).to.have.all.keys([
+              "article_id",
+              "title",
+              "topic",
+              "author",
+              "body",
+              "created_at",
+              "votes"
+            ]);
+          });
+      });
+
+      it.only("PATCH 400 Returns error if try to update author to non existing author.", () => {
+        return request(app)
+          .patch("/api/articles/2")
+          .send({ author: "NON_EXI_USER" })
+          .expect(400);
+      });
+
       it("PATCH 200 ADMIN returns updated article with votes incremented according to request body", () => {
-        return (
-          request(app)
-            .patch("/api/articles/1")
-            .send({ inc_votes: 1000 })
-            .expect(200)
-
-            //I think testing the exact object might be excessive, so I've trimmed it down to what comes after this chunk.
-            // .then(res => {
-            //     delete res.body.article.created_at
-            //     expect(res.body.article).to.eql(  {
-            //         article_id: 1,
-            //         title: 'Living in the shadow of a great man',
-            //         topic: 'mitch',
-            //         author: 'butter_bridge',
-            //         body: 'I find this existence challenging',
-            //         //created_at: 1542284514171,
-            //         votes: 1100,
-            //       })
-            // })
-
-            .then(res => {
-              expect(res.body.article.votes).to.equal(1100);
-              expect(res.body.article).to.have.all.keys([
-                "article_id",
-                "title",
-                "topic",
-                "author",
-                "body",
-                "created_at",
-                "votes"
-              ]);
-            })
-        );
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: 1000 })
+          .expect(200)
+          .then(res => {
+            expect(res.body.article.votes).to.equal(1100);
+            expect(res.body.article).to.have.all.keys([
+              "article_id",
+              "title",
+              "topic",
+              "author",
+              "body",
+              "created_at",
+              "votes"
+            ]);
+          });
       });
       it("PATCH 200 ADMIN returns updated article with votes decremented according to request body", () => {
-        return (
-          request(app)
-            .patch("/api/articles/1")
-            .send({ inc_votes: -5100 })
-            .expect(200)
-
-            //I think testing the exact object might be excessive, so I've trimmed it down to what comes after this chunk.
-            // .then(res => {
-            //     delete res.body.article.created_at
-            //     expect(res.body.article).to.eql(  {
-            //         article_id: 1,
-            //         title: 'Living in the shadow of a great man',
-            //         topic: 'mitch',
-            //         author: 'butter_bridge',
-            //         body: 'I find this existence challenging',
-            //         //created_at: 1542284514171,
-            //         votes: -5000,
-            //       })
-            // })
-            .then(res => {
-              expect(res.body.article.votes).to.equal(-5000);
-              expect(res.body.article).to.have.all.keys([
-                "article_id",
-                "title",
-                "topic",
-                "author",
-                "body",
-                "created_at",
-                "votes"
-              ]);
-            })
-        );
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: -5100 })
+          .expect(200)
+          .then(res => {
+            expect(res.body.article.votes).to.equal(-5000);
+            expect(res.body.article).to.have.all.keys([
+              "article_id",
+              "title",
+              "topic",
+              "author",
+              "body",
+              "created_at",
+              "votes"
+            ]);
+          });
       });
 
       it("PATCH 200 ADMIN returns unchanged item when empty request.", () => {

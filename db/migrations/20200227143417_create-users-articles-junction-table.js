@@ -3,7 +3,7 @@ exports.up = function(knex) {
     "users_articles_table",
     users_articles_table => {
       users_articles_table
-        .string("liking_user")
+        .string("voting_user")
         .notNullable()
         .references("users.username")
         .onDelete("CASCADE");
