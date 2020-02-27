@@ -553,7 +553,7 @@ describe("/api", () => {
           //expect(res.body.articles.length).to.equal(11) //Pagination could interfere with this.
         });
     });
-    it.only(">>>>GET 200 articles array filtered by user who upvoted them.", () => {
+    it(">>>>GET 200 articles array filtered by user who upvoted them.", () => {
       return request(app)
         .patch("/api/articles/1")
         .send({ inc_votes: 1, liking_user: "lurker" })
@@ -910,7 +910,7 @@ describe("/api", () => {
           .expect(200)
           .then(res => {
             expect(res.body.article).to.eql({
-              user: "butter_bridge",
+              liking_user: "butter_bridge",
               article_id: 1,
               inc_votes: 1
             });
@@ -924,7 +924,7 @@ describe("/api", () => {
           .expect(200)
           .then(res => {
             expect(res.body.article).to.eql({
-              user: "butter_bridge",
+              liking_user: "butter_bridge",
               article_id: 1,
               inc_votes: -1
             });

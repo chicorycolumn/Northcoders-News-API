@@ -140,7 +140,7 @@ exports.addVoteToArticleByUser = (
   return connection
     .select("*")
     .from("users_articles_table")
-    .where("user", liking_user)
+    .where("liking_user", liking_user)
     .andWhere("article_id", article_id)
 
     .then(rows => {
@@ -152,7 +152,7 @@ exports.addVoteToArticleByUser = (
           return Promise.reject({ status: 400 });
         } else {
           return connection("users_articles_table")
-            .where("user", liking_user)
+            .where("liking_user", liking_user)
             .andWhere("article_id", article_id)
             .increment("inc_votes", inc_votes)
             .returning("*")
@@ -163,7 +163,7 @@ exports.addVoteToArticleByUser = (
       } else
         return connection
           .insert({
-            user: liking_user,
+            liking_user: liking_user,
             article_id: article_id,
             inc_votes: inc_votes
           })
