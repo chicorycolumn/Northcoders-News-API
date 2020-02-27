@@ -24,28 +24,106 @@ const { doesValueExistInTable } = require("../db/utils/utils");
 //THE FUNCTION THAT ROUTES ALL PATCH REQUESTS TO THIS ENDPOINT:
 exports.updateArticleDetails = (
   { article_id },
-  { body, inc_votes, author, liking_user, ...badQueries }
+  { body, inc_votes, title, author, liking_user, topic, ...badKeys },
+  urlQueries
 ) => {
-  if (Object.keys(badQueries).length > 0) {
+  // Are there excessive keys in request body?
+  if (Object.keys(badKeys).length > 0) {
     return Promise.reject({ status: 400, customStatus: "400a" });
-  } else if (
-    [body, inc_votes, author, liking_user].every(arg => arg === undefined)
-  ) {
+  }
+
+  // Should we invoke Add Votes To Article By User?
+  else if (inc_votes !== undefined && liking_user !== undefined) {
+    return this.addVoteToArticleByUser(
+      { article_id },
+      { inc_votes, liking_user }
+    );
+  }
+
+  // Should we invoke Update Article Votes?
+  else if (inc_votes !== undefined && liking_user === undefined) {
+    return this.updateArticleVotes({ article_id }, { inc_votes, liking_user });
+  }
+
+  // We will modify article details. Note, you cannot do both this and Add Votes To Article By User.
+  // Note, this replaces the Update Article Votes function.
+  else if (liking_user === undefined) {
+    return connection
+      .select("*")
+      .from("articles")
+      .modify(queryBuilder => {
+        // [body, topic, title, author].forEach(arg => {
+        //   if (arg !== undefined) {
+        //     queryBuilder = queryBuilder.update({ arg: arg });
+        //   }
+
+        //   if (inc_votes !== undefined) {
+        //     queryBuilder = queryBuilder.increment("votes", inc_votes);
+        //   }
+        // });
+        // This ought to replace all the below.
+
+        if (inc_votes !== undefined) {
+          queryBuilder = queryBuilder.increment("votes", inc_votes);
+        }
+        if (author !== undefined) {
+          queryBuilder = queryBuilder.update({
+            body: body
+          });
+        }
+        if (topic !== undefined) {
+          queryBuilder = queryBuilder.update({
+            topic: topic
+          });
+        }
+        if (title !== undefined) {
+          queryBuilder = queryBuilder.update({
+            title: title
+          });
+        }
+        if (author !== undefined) {
+          queryBuilder = queryBuilder.update({
+            author: author
+          });
+        }
+      })
+      .returning("*")
+      .then(articleArr => {
+        if (articleArr.length === 0) {
+          return Promise.reject({ status: 404, customStatus: "404a" });
+        } else return articleArr[0];
+      });
+  }
+
+  // There are missing keys so we will not update details, merely return unchanged item to user.
+  else
     return connection
       .select("*")
       .from("articles")
       .where("article_id", article_id)
       .then(articleArr => {
-        return articleArr[0];
+        if (articleArr.length === 0) {
+          return Promise.reject({ status: 404, customStatus: "404a" });
+        } else return articleArr[0];
       });
-  } else if (inc_votes !== undefined && liking_user !== undefined) {
-    return this.addVoteToArticleByUser(
-      { article_id },
-      { inc_votes, liking_user }
-    );
-  } else if (inc_votes !== undefined) {
-    return this.updateArticleVotes({ article_id }, { inc_votes });
-  }
+
+  //
+  // else if (inc_votes !== undefined && liking_user !== undefined) {
+  //   return this.addVoteToArticleByUser(
+  //     { article_id },
+  //     { inc_votes, liking_user }
+  //   );
+  // }
+
+  // //
+  // else if ([body, topic, title, author].some(arg => arg !== undefined)) {
+  //   return this.updateArticleTitleTopicBodyOrAuthor(
+  //     { article_id },
+  //     { body, topic, title, author }
+  //   );
+  // }
+
+  //
 };
 
 //THE FUNCTIONS THAT ARE ROUTED TO:
@@ -53,6 +131,8 @@ exports.addVoteToArticleByUser = (
   { article_id },
   { inc_votes = 0, liking_user, ...badQueries }
 ) => {
+  console.log("********");
+  console.log(inc_votes, liking_user);
   // if (Object.keys(badQueries).length > 0) {
   //   return Promise.reject({ status: 400, customStatus: "400a" });
   // }
@@ -62,7 +142,7 @@ exports.addVoteToArticleByUser = (
 
   return connection
     .insert({
-      username: liking_user,
+      user: liking_user,
       article_id: article_id,
       inc_votes: inc_votes
     })
@@ -81,13 +161,49 @@ exports.updateArticleVotes = (
   //   return Promise.reject({ status: 400, customStatus: "400a" });
   // }
   return connection("articles")
-    .where({ article_id: article_id })
+    .where({ article_id: article_id }) // No quotation marks needed.
     .increment("votes", inc_votes)
     .returning("*")
     .then(articles => {
       if (articles.length === 0) {
         return Promise.reject({ status: 404, customStatus: "404a" });
       } else return articles[0];
+    });
+};
+
+exports.updateArticleTitleTopicBodyOrAuthor = (
+  { article_id },
+  { body, topic, title, author }
+) => {
+  return connection("articles")
+    .where("article_id", article_id)
+    .modify(queryBuilder => {
+      //[body, topic, title, author].forEach(arg => queryBuilder = queryBuilder.update({arg: arg})) // This ought to replace all the below.
+
+      if (author !== undefined) {
+        queryBuilder.update({
+          body: body
+        });
+      }
+      if (topic !== undefined) {
+        queryBuilder.update({
+          topic: topic
+        });
+      }
+      if (title !== undefined) {
+        queryBuilder.update({
+          title: title
+        });
+      }
+      if (author !== undefined) {
+        queryBuilder.update({
+          author: author
+        });
+      }
+    })
+    .returning("*")
+    .then(articleArr => {
+      return articleArr[0];
     });
 };
 /*********************************************************** */
@@ -317,7 +433,7 @@ exports.createNewArticle = ({
 
 exports.deleteArticleByID = ({ article_id }) => {
   return connection("articles")
-    .where({ article_id: article_id })
+    .where({ article_id: article_id }) // No quotation marks needed.
     .del()
     .then(numberRowsDeleted => {
       if (numberRowsDeleted === 0) {

@@ -881,22 +881,31 @@ describe("/api", () => {
           });
       });
 
-      xit("~~~PATCH 200 Updates the vote count of an article with regard to user, jx table.", () => {
+      it("~~~PATCH 200 Adds row to junction table re re user adding a vote to an article.", () => {
         return request(app)
           .patch("/api/articles/1")
-          .send({ inc_votes: 1, username: "butter_bridge" })
+          .send({ inc_votes: 1, liking_user: "butter_bridge" })
           .expect(200)
           .then(res => {
-            expect(res.body.article.votes).to.equal(101);
-            expect(res.body.article).to.have.all.keys([
-              "article_id",
-              "title",
-              "topic",
-              "author",
-              "body",
-              "created_at",
-              "votes"
-            ]);
+            expect(res.body.article).to.eql({
+              user: "butter_bridge",
+              article_id: 1,
+              inc_votes: 1
+            });
+          });
+      });
+
+      it("~~~PATCH 200 Adds row to junction table re re user adding a negative vote to an article.", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: -1, liking_user: "butter_bridge" })
+          .expect(200)
+          .then(res => {
+            expect(res.body.article).to.eql({
+              user: "butter_bridge",
+              article_id: 1,
+              inc_votes: -1
+            });
           });
       });
 

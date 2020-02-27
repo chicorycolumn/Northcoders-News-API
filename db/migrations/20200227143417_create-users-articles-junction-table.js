@@ -12,7 +12,7 @@ exports.up = function(knex) {
         .notNullable()
         .references("articles.article_id")
         .onDelete("CASCADE");
-      users_articles_table.integer("inc_vote").notNullable();
+      users_articles_table.integer("inc_votes").notNullable();
     }
   );
 };
