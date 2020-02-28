@@ -48,7 +48,6 @@ exports.updateArticleDetails = (
   // We will modify article details. Note, you cannot do both this and Add Votes To Article By User.
   // Note, this replaces the Update Article Votes function.
   else if (voting_user === undefined) {
-    console.log("here!");
     return connection
       .select("*")
       .from("articles")
@@ -315,7 +314,6 @@ exports.fetchArticleData = (
 
             //************** */
             .modify(queryBuilder => {
-              console.log(author, topic, title);
               if (author !== undefined) {
                 queryBuilder.where("articles.author", author);
               }

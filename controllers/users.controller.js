@@ -1,8 +1,16 @@
 const {
   fetchUserByUsername,
   fetchUsers,
-  createNewUser
+  createNewUser,
+  updateUserDetails
 } = require("../models/users.model");
+
+exports.patchUserDetails = (req, res, next) => {
+  console.log("cooooooooooooooooooooon");
+  updateUserDetails(req.params, req.body)
+    .then(user => res.send({ user }))
+    .catch(err => next(err));
+};
 
 exports.getUserByUsername = (req, res, next) => {
   fetchUserByUsername(req.params)

@@ -282,6 +282,119 @@ describe("/api", () => {
     });
 
     describe("/:username", () => {
+      it("PATCH 200 returns updated user with name changed according to request body", () => {
+        return request(app)
+          .patch("/api/users/icellusedkars")
+          .send({ name: "Samuel" })
+          .expect(200)
+          .then(res => {
+            return request(app)
+              .get("/api/users/icellusedkars")
+              .expect(200)
+              .then(res => {
+                expect(res.body.user.username).to.equal("icellusedkars");
+                expect(res.body.user.name).to.equal("Samuel");
+              });
+          });
+      });
+      it("PATCH 200 returns updated user with avatar_url changed according to request body", () => {
+        return request(app)
+          .patch("/api/users/icellusedkars")
+          .send({
+            avatar_url: "www.facebook.com/profile.jpg"
+          })
+          .expect(200)
+          .then(res => {
+            return request(app)
+              .get("/api/users/icellusedkars")
+              .expect(200)
+              .then(res => {
+                expect(res.body.user.username).to.equal("icellusedkars");
+                expect(res.body.user.avatar_url).to.equal(
+                  "www.facebook.com/profile.jpg"
+                );
+              });
+          });
+      });
+
+      it("PATCH 200 returns updated user with avatar_url AND name changed according to request body", () => {
+        return request(app)
+          .patch("/api/users/icellusedkars")
+          .send({
+            avatar_url: "www.facebook.com/profile.jpg",
+            name: "Samuel"
+          })
+          .expect(200)
+          .then(res => {
+            expect(res.body.user.username).to.equal("icellusedkars");
+            expect(res.body.user.name).to.equal("Samuel");
+            expect(res.body.user.avatar_url).to.equal(
+              "www.facebook.com/profile.jpg"
+            );
+          });
+      });
+      it("PATCH 404a returns error when username valid but no correspond.", () => {
+        return request(app)
+          .patch("/api/users/NON_EXI_USER")
+          .send({
+            avatar_url: "www.facebook.com/profile.jpg",
+            name: "Samuel"
+          })
+          .expect(404)
+          .then(res => {
+            expect(res.body.msg).to.equal(myErrMsgs["404a"]);
+          });
+      });
+      it("PATCH 200 returns unchanged object when empty request.", () => {
+        return request(app)
+          .patch("/api/users/icellusedkars")
+          .send({})
+          .expect(200)
+          .then(res => {
+            console.log(res.body.user);
+            expect(res.body.user).to.eql({
+              username: "icellusedkars",
+              avatar_url:
+                "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4",
+              name: "sam"
+            });
+          });
+      });
+      it("PATCH 400a returns error when fields missing in request, eg mistyped keys.", () => {
+        return request(app)
+          .patch("/api/users/icellusedkars")
+          .send({ nameeeeeeeeeeeeeeee: "Samuel" })
+          .expect(400)
+          .then(res => {
+            expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+          });
+      });
+      // it("PATCH 400d returns error when avatar_url fails url regex test.", () => {
+      //   return request(app)
+      //     .patch("/api/comments/1")
+      //     .send({
+      //       avatar_url: "/not.a.valid.url",
+      //       name: "Samuel"
+      //     })
+      //     .expect(400)
+      //     .then(res => {
+      //       expect(res.body.msg).to.equal(myErrMsgs["400d"]);
+      //     });
+      // });
+      it("PATCH 400a returns error when request contains other values.", () => {
+        return request(app)
+          .patch("/api/users/icellusedkars")
+          .send({
+            avatar_url: "www.facebook.com/profile.jpg",
+            name: "Samuel",
+            BADKEY: "NO NEED FOR THIS"
+          })
+          .expect(400)
+          .then(res => {
+            expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+          });
+      });
+
       it("GET 200 returns user by ID, which has username, avatar_url, and name.", () => {
         return request(app)
           .get("/api/users/lurker")
@@ -660,7 +773,6 @@ describe("/api", () => {
                 .get("/api/articles?voted_by=butter_bridge&vote_direction=down")
                 .expect(200)
                 .then(res => {
-                  console.log(res.body.articles);
                   expect(res.body.articles).to.eql([
                     {
                       comment_count: 0,
@@ -1171,13 +1283,12 @@ describe("/api", () => {
           });
       });
 
-      it.only("PATCH 200 Returns updated article body.", () => {
+      it("PATCH 200 Returns updated article body.", () => {
         return request(app)
           .patch("/api/articles/4")
           .send({ body: "Get my green pak choi, squire!" })
           .expect(200)
           .then(res => {
-            console.log(res.body.article);
             expect(res.body.article.body).to.equal(
               "Get my green pak choi, squire!"
             );
@@ -1194,13 +1305,12 @@ describe("/api", () => {
           });
       });
 
-      it.only("PATCH 200 Returns updated article title.", () => {
+      it("PATCH 200 Returns updated article title.", () => {
         return request(app)
           .patch("/api/articles/5")
           .send({ title: "Lick this tree of oak and grain." })
           .expect(200)
           .then(res => {
-            console.log(res.body.article);
             expect(res.body.article.article_id).to.equal(5);
             expect(res.body.article.title).to.equal(
               "Lick this tree of oak and grain."
@@ -1217,13 +1327,12 @@ describe("/api", () => {
           });
       });
 
-      it.only("PATCH 200 Returns updated article author.", () => {
+      it("PATCH 200 Returns updated article author.", () => {
         return request(app)
           .patch("/api/articles/2")
           .send({ author: "lurker" })
           .expect(200)
           .then(res => {
-            console.log(res.body.article);
             expect(res.body.article.title).to.equal(
               "Sony Vaio; or, The Laptop"
             );
@@ -1240,11 +1349,14 @@ describe("/api", () => {
           });
       });
 
-      it.only("PATCH 400 Returns error if try to update author to non existing author.", () => {
+      it("PATCH 404c Returns error if try to update author to non existing author.", () => {
         return request(app)
           .patch("/api/articles/2")
           .send({ author: "NON_EXI_USER" })
-          .expect(400);
+          .expect(404)
+          .then(res => {
+            expect(res.body.msg).to.equal(myErrMsgs["404c"]);
+          });
       });
 
       it("PATCH 200 ADMIN returns updated article with votes incremented according to request body", () => {
@@ -1594,8 +1706,82 @@ describe("/api", () => {
       });
     });
   });
+
   describe("/comments", () => {
     describe("/:comment_id", () => {
+      it("GET 200 returns comment by ID.", () => {
+        return request(app)
+          .get("/api/comments/5")
+          .expect(200)
+          .then(res => {
+            expect(res.body.comment).to.be.an("Object");
+            expect(res.body.comment).to.have.all.keys([
+              "author",
+              "comment_id",
+              "article_id",
+              "votes",
+              "created_at",
+              "body"
+            ]);
+            expect(res.body.comment.comment_id).to.equal(5);
+          });
+      });
+      it("GET 404a returns error when id valid but no correspond.", () => {
+        return request(app)
+          .patch("/api/comments/6666")
+          .expect(404)
+          .then(res => {
+            expect(res.body.msg).to.equal(myErrMsgs["404a"]);
+          });
+      });
+      it("GET 400b returns error when id invalid.", () => {
+        return request(app)
+          .patch("/api/comments/INVALID_ID")
+          .expect(400)
+          .then(res => {
+            expect(res.body.msg).to.equal(myErrMsgs["400b"]);
+          });
+      });
+      it("PATCH 200 returns updated comment with body changed according to request body", () => {
+        return request(app)
+          .patch("/api/comments/5")
+          .send({ body: "Reading this cured my emphesema." })
+          .expect(200)
+          .then(res => {
+            return request(app)
+              .get("/api/comments/5")
+              .expect(200)
+              .then(res => {
+                expect(res.body.comment.comment_id).to.equal(5);
+                expect(res.body.comment.body).to.equal(
+                  "Reading this cured my emphesema."
+                );
+              });
+          });
+      });
+      it("PATCH 200 returns updated comment with body AND votes changed according to request body", () => {
+        return request(app)
+          .patch("/api/comments/2")
+          .send({
+            body: "Reading this cured my vitamin D deficiency.",
+            inc_votes: 86
+          })
+          .expect(200)
+          .then(res => {
+            console.log(res.body.comment);
+            return request(app)
+              .get("/api/comments/2")
+              .expect(200)
+              .then(res => {
+                expect(res.body.comment.comment_id).to.equal(2);
+                expect(res.body.comment.votes).to.equal(100);
+                expect(res.body.comment.body).to.equal(
+                  "Reading this cured my vitamin D deficiency."
+                );
+              });
+          });
+      });
+
       it("PATCH 200 returns updated comment with votes incremented according to request body", () => {
         return request(app)
           .patch("/api/comments/2")
@@ -1748,10 +1934,7 @@ describe("/api", () => {
       });
       it("Responds 405 if any other methods are used at this endpoint", () => {
         const url = "/api/comments/2";
-        return Promise.all([
-          request(app).get(url),
-          request(app).post(url)
-        ]).then(resArr => {
+        return Promise.all([request(app).post(url)]).then(resArr => {
           resArr.forEach(response => {
             expect(405);
             expect(response.body.msg).to.equal(myErrMsgs["405"]);
