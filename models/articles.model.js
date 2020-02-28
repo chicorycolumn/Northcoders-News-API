@@ -261,187 +261,148 @@ exports.fetchArticleData = (
 ) => {
   const currentDate = new Date();
   const startDate = new Date(currentDate - minutes * 60000);
+  if (Object.keys(badUrlQueries).length) {
+    return Promise.reject({ status: 400, customStatus: "400c" });
+  } else
+    return (
+      connection
+        .from("articles")
+        .leftJoin("comments", "articles.article_id", "comments.article_id")
+        .count({ comment_count: "comments.article_id" })
+        .groupBy("articles.article_id")
+        .modify(queryBuilder => {
+          if (voted_by !== undefined && vote_direction === "up") {
+            queryBuilder = queryBuilder
+              .rightJoin(
+                "users_articles_table",
+                "articles.article_id",
+                "users_articles_table.article_id"
+              )
+              .where("voting_user", voted_by)
+              .andWhere("inc_votes", 1);
+          } else if (voted_by !== undefined && vote_direction === "down") {
+            queryBuilder = queryBuilder
+              .rightJoin(
+                "users_articles_table",
+                "articles.article_id",
+                "users_articles_table.article_id"
+              )
+              .where("voting_user", voted_by)
+              .andWhere("inc_votes", -1);
+          }
+        })
 
-  return Promise.all([
-    doesValueExistInTable(author, "username", "users"),
-    doesValueExistInTable(topic, "slug", "topics"),
-    doesValueExistInTable(title, "title", "articles"),
-    doesValueExistInTable(voted_by, "voting_user", "users_articles_table")
-  ])
-    .then(promiseAllResults => {
-      if (
-        (author !== undefined && promiseAllResults[0] === false) ||
-        (topic !== undefined && promiseAllResults[1] === false) ||
-        (voted_by !== undefined && promiseAllResults[2] === false) ||
-        (title !== undefined && promiseAllResults[3] === false)
-      ) {
-        // return Promise.reject({ status: 404, customStatus: "404b" });
-      }
-    })
-    .then(() => {
-      if (Object.keys(badUrlQueries).length) {
-        return Promise.reject({ status: 400, customStatus: "400c" });
-      } else
-        return (
-          connection
-            .from("articles")
-            .leftJoin("comments", "articles.article_id", "comments.article_id")
-            .count({ comment_count: "comments.article_id" })
-            .groupBy("articles.article_id")
+        //************** */
+        .modify(queryBuilder => {
+          if (author !== undefined) {
+            queryBuilder.where("articles.author", author);
+          }
+          if (topic !== undefined) {
+            queryBuilder.where("articles.topic", topic);
+          }
+          if (title !== undefined) {
+            queryBuilder.where("articles.title", title);
+          }
+        })
+        .where("articles.created_at", ">=", startDate)
+        .orderBy(sort_by, order)
 
-            // //experimental
-            // .with('NEW_TABLE', (qb) => {
-            //   qb.select('*')
-            //   .from('articles')
-            //   .rightJoin(
-            //     "users_articles_table",
-            //     "articles.article_id",
-            //     "users_articles_table.article_id"
-            //   )
-            //   .where('author', 'Test')
-            // }).select('*').from('NEW_TABLE')
+        .modify(queryBuilder => {
+          if (article_id !== undefined) {
+            //Endpoint wants one article.
+            queryBuilder
+              .where("articles.article_id", article_id)
+              .first(
+                "articles.author",
+                "articles.title",
+                "articles.article_id",
+                "articles.votes",
+                "articles.topic",
+                "articles.body",
+                "articles.created_at"
+              );
+          } else {
+            // Endpoint wants many articles.
+            queryBuilder.select(
+              "articles.author",
+              "articles.title",
+              "articles.article_id",
+              "articles.votes",
+              "articles.topic",
+              //"articles.body", // Not desired at endpoint.
+              "articles.created_at"
+            );
+          }
+        })
 
-            // .count({ vote_counter: "users_articles_table.inc_votes" })
-            // //.where("users_articles_table.inc_votes", -1)
-            // .groupBy("articles.article_id")
-            // //end experimental
+        .then(articleData => {
+          if (articleData === undefined) {
+            return Promise.reject({ status: 404, customStatus: "404a" });
+          } else if (Array.isArray(articleData)) {
+            // if (articleData.length === 0) {
+            //   return Promise.reject({ status: 404, customStatus: "404b" }); // Or this could return empty array, as Lurker has written no articles.
+            // } else {
+            articleData.forEach(
+              item => (item.comment_count = parseInt(item.comment_count))
+            );
 
-            // //*************** */
+            return {
+              articles: articleData.slice(p * limit - limit, p * limit),
+              total_count: articleData.length
+            }; // articleData is array
 
-            .modify(queryBuilder => {
-              if (voted_by !== undefined && vote_direction === "up") {
-                queryBuilder = queryBuilder
-                  .rightJoin(
-                    "users_articles_table",
-                    "articles.article_id",
-                    "users_articles_table.article_id"
-                  )
-                  .where("voting_user", voted_by)
-                  .andWhere("inc_votes", 1);
-              } else if (voted_by !== undefined && vote_direction === "down") {
-                queryBuilder = queryBuilder
-                  .rightJoin(
-                    "users_articles_table",
-                    "articles.article_id",
-                    "users_articles_table.article_id"
-                  )
-                  .where("voting_user", voted_by)
-                  .andWhere("inc_votes", -1);
-              }
-            })
+            // }
+          } else {
+            articleData.comment_count = parseInt(articleData.comment_count);
 
-            //************** */
-            .modify(queryBuilder => {
-              if (author !== undefined) {
-                queryBuilder.where("articles.author", author);
-              }
-              if (topic !== undefined) {
-                queryBuilder.where("articles.topic", topic);
-              }
-              if (title !== undefined) {
-                queryBuilder.where("articles.title", title);
-              }
-            })
-            .where("articles.created_at", ">=", startDate)
-            .orderBy(sort_by, order)
+            //Now we add the votes from the upvotes and downvotes.
 
-            .modify(queryBuilder => {
-              if (article_id !== undefined) {
-                //Endpoint wants one article.
-                queryBuilder
-                  .where("articles.article_id", article_id)
-                  .first(
-                    "articles.author",
-                    "articles.title",
-                    "articles.article_id",
-                    "articles.votes",
-                    "articles.topic",
-                    "articles.body",
-                    "articles.created_at"
-                  );
-              } else {
-                // Endpoint wants many articles.
-                queryBuilder.select(
-                  "articles.author",
-                  "articles.title",
+            const the_article_id_i_want = articleData.article_id;
+            return (
+              connection
+                .from("articles")
+                .leftJoin(
+                  "users_articles_table",
                   "articles.article_id",
-                  "articles.votes",
-                  "articles.topic",
+                  "users_articles_table.article_id"
+                )
+                .whereIn("users_articles_table.inc_votes", [-1, 1])
+                .andWhere(
+                  "users_articles_table.article_id",
+                  the_article_id_i_want
+                ) // change to placeholder!
+                //.count({ voteeeeeee: "users_articles_table.article_id" })
+                // .groupBy("articles.article_id")
+                .select(
+                  "articles.article_id",
+                  // "articles.author",
+                  // "articles.title",
+                  // "articles.votes",
+                  // "articles.topic",
                   //"articles.body", // Not desired at endpoint.
-                  "articles.created_at"
-                );
-              }
-            })
-
-            .then(articleData => {
-              if (articleData === undefined) {
-                return Promise.reject({ status: 404, customStatus: "404a" });
-              } else if (Array.isArray(articleData)) {
-                // if (articleData.length === 0) {
-                //   return Promise.reject({ status: 404, customStatus: "404b" }); // Or this could return empty array, as Lurker has written no articles.
-                // } else {
-                articleData.forEach(
-                  item => (item.comment_count = parseInt(item.comment_count))
-                );
-
-                return {
-                  articles: articleData.slice(p * limit - limit, p * limit),
-                  total_count: articleData.length
-                }; // articleData is array
-
-                // }
-              } else {
-                articleData.comment_count = parseInt(articleData.comment_count);
-
-                //Now we add the votes from the upvotes and downvotes.
-
-                const the_article_id_i_want = articleData.article_id;
-                return (
-                  connection
-                    .from("articles")
-                    .leftJoin(
-                      "users_articles_table",
-                      "articles.article_id",
-                      "users_articles_table.article_id"
+                  // "articles.created_at",
+                  "users_articles_table.inc_votes"
+                )
+                .then(resArr => {
+                  let totalVotes = 0;
+                  resArr.forEach(item => {
+                    if (
+                      typeof item.inc_votes === "number" &&
+                      !isNaN(item.inc_votes)
                     )
-                    .whereIn("users_articles_table.inc_votes", [-1, 1])
-                    .andWhere(
-                      "users_articles_table.article_id",
-                      the_article_id_i_want
-                    ) // change to placeholder!
-                    //.count({ voteeeeeee: "users_articles_table.article_id" })
-                    // .groupBy("articles.article_id")
-                    .select(
-                      "articles.article_id",
-                      // "articles.author",
-                      // "articles.title",
-                      // "articles.votes",
-                      // "articles.topic",
-                      //"articles.body", // Not desired at endpoint.
-                      // "articles.created_at",
-                      "users_articles_table.inc_votes"
-                    )
-                    .then(resArr => {
-                      let totalVotes = 0;
-                      resArr.forEach(item => {
-                        if (
-                          typeof item.inc_votes === "number" &&
-                          !isNaN(item.inc_votes)
-                        )
-                          totalVotes += item.inc_votes;
-                      });
-                      console.log(totalVotes);
-                      articleData.votes = parseInt(
-                        articleData.votes + parseInt(totalVotes)
-                      );
-                      return articleData;
-                    })
-                );
-              }
-              return articleData; // articleData is one article
-            })
-        );
-    });
+                      totalVotes += item.inc_votes;
+                  });
+                  console.log(totalVotes);
+                  articleData.votes = parseInt(
+                    articleData.votes + parseInt(totalVotes)
+                  );
+                  return articleData;
+                })
+            );
+          }
+          return articleData; // articleData is one article
+        })
+    );
 };
 
 exports.createNewCommentOnArticle = (
