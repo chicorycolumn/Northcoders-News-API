@@ -1,5 +1,4 @@
 const {
-  fetchUserByUsername,
   fetchUsers,
   createNewUser,
   updateUserDetails
@@ -12,13 +11,18 @@ exports.patchUserDetails = (req, res, next) => {
 };
 
 exports.getUserByUsername = (req, res, next) => {
-  fetchUserByUsername(req.params)
-    .then(user => res.send({ user }))
+  console.log("get userbyusername con###########");
+  fetchUsers(req.params)
+    .then(userArr => {
+      const user = userArr[0]; // !!!!
+      res.send({ user });
+    })
     .catch(err => next(err));
 };
 
 exports.getUsers = (req, res, next) => {
-  fetchUsers()
+  console.log("get user con###########");
+  fetchUsers({})
     .then(users => res.send({ users }))
     .catch(err => next(err));
 };

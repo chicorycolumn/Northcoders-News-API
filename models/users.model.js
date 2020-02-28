@@ -1,4 +1,5 @@
 const connection = require("../db/connection.js");
+const { doesValueExistInTable } = require("../db/utils/utils");
 
 exports.updateUserDetails = (
   { username },
@@ -32,21 +33,26 @@ exports.updateUserDetails = (
       });
 };
 
-exports.fetchUserByUsername = ({ username }) => {
-  return connection("users")
-    .select("*")
-    .where({ username: username })
-    .then(userArray => {
-      if (userArray.length === 0) {
-        return Promise.reject({ status: 404, customStatus: "404a" });
-      } else {
-        return userArray[0];
-      }
-    });
-};
-
-exports.fetchUsers = () => {
-  return connection("users").select("*");
+exports.fetchUsers = ({ username }) => {
+  return doesValueExistInTable(username, "username", "users").then(res => {
+    if (!res && username !== undefined) {
+      return Promise.reject({ status: 404, customStatus: "404a" });
+    } else
+      return connection("users")
+        .select("*")
+        .modify(queryBuilder => {
+          if (username !== undefined) {
+            queryBuilder = queryBuilder
+              .where({ username: username })
+              .then(userArray => {
+                if (userArray.length === 0) {
+                } else {
+                  return userArray[0];
+                }
+              });
+          }
+        });
+  });
 };
 
 exports.createNewUser = ({

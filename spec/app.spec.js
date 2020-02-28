@@ -290,6 +290,9 @@ describe("/api", () => {
               .get("/api/users/icellusedkars")
               .expect(200)
               .then(res => {
+                console.log("Spec receives...");
+                console.log(res.body.user);
+                console.log("...you see.");
                 expect(res.body.user.username).to.equal("icellusedkars");
                 expect(res.body.user.name).to.equal("Samuel");
               });
@@ -1025,6 +1028,93 @@ describe("/api", () => {
     });
 
     describe("/:articleid", () => {
+      it("+++++GET 200 returns article object where vote is calculated by upvotes from users, add to base vote level from data file, limited to 10 items by default, starting page 1 by default", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: -1, voting_user: "butter_bridge" })
+          .expect(200)
+          .then(res => {
+            return request(app)
+              .patch("/api/articles/1")
+              .send({ inc_votes: -1, voting_user: "lurker" })
+              .expect(200)
+              .then(res => {
+                return request(app)
+                  .patch("/api/articles/1")
+                  .send({ inc_votes: -1, voting_user: "icellusedkars" })
+                  .expect(200)
+                  .then(res => {
+                    return request(app)
+                      .get("/api/articles/1")
+                      .expect(200)
+                      .then(res => {
+                        console.log(res.body.article);
+                        expect(res.body.article).to.be.an("Object");
+                        expect(res.body.article.votes).to.equal(97);
+                      });
+                  });
+              });
+          });
+      });
+
+      it("++GET 200 returns article object where vote is calculated by downvotes and upvotes from users, add to base vote level from data file, limited to 10 items by default, starting page 1 by default", () => {
+        return request(app)
+          .patch("/api/articles/2")
+          .send({ inc_votes: -1, voting_user: "butter_bridge" })
+          .expect(200)
+          .then(res => {
+            return request(app)
+              .patch("/api/articles/2")
+              .send({ inc_votes: 1, voting_user: "lurker" })
+              .expect(200)
+              .then(res => {
+                return request(app)
+                  .patch("/api/articles/2")
+                  .send({ inc_votes: -1, voting_user: "icellusedkars" })
+                  .expect(200)
+                  .then(res => {
+                    return request(app)
+                      .get("/api/articles/2")
+                      .expect(200)
+                      .then(res => {
+                        console.log(res.body.article);
+                        expect(res.body.article).to.be.an("Object");
+                        expect(res.body.article.votes).to.equal(-1);
+                      });
+                  });
+              });
+          });
+      });
+
+      it("++GET 200 returns article object where vote is calculated by downvotes and upvotes, and not interfered with by votes on other articles", () => {
+        return request(app)
+          .patch("/api/articles/2")
+          .send({ inc_votes: 1, voting_user: "butter_bridge" })
+          .expect(200)
+          .then(res => {
+            return request(app)
+              .patch("/api/articles/2")
+              .send({ inc_votes: 1, voting_user: "lurker" })
+              .expect(200)
+              .then(res => {
+                return request(app)
+                  .patch("/api/articles/4")
+                  .send({ inc_votes: 1, voting_user: "icellusedkars" })
+                  .expect(200)
+                  .then(res => {
+                    return request(app)
+                      .get("/api/articles/2")
+                      .expect(200)
+                      .then(res => {
+                        console.log(res.body.article);
+                        expect(res.body.article).to.be.an("Object");
+                        expect(res.body.article.votes).to.equal(2);
+                      });
+                  });
+              });
+          });
+      });
+
       it("###DELETE 204 all comments associated with that article are deleted too!", () => {
         return request(app)
           .del("/api/articles/1")

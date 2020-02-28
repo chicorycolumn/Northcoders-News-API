@@ -288,7 +288,25 @@ exports.fetchArticleData = (
             .leftJoin("comments", "articles.article_id", "comments.article_id")
             .count({ comment_count: "comments.article_id" })
             .groupBy("articles.article_id")
-            //*************** */
+
+            // //experimental
+            // .with('NEW_TABLE', (qb) => {
+            //   qb.select('*')
+            //   .from('articles')
+            //   .rightJoin(
+            //     "users_articles_table",
+            //     "articles.article_id",
+            //     "users_articles_table.article_id"
+            //   )
+            //   .where('author', 'Test')
+            // }).select('*').from('NEW_TABLE')
+
+            // .count({ vote_counter: "users_articles_table.inc_votes" })
+            // //.where("users_articles_table.inc_votes", -1)
+            // .groupBy("articles.article_id")
+            // //end experimental
+
+            // //*************** */
 
             .modify(queryBuilder => {
               if (voted_by !== undefined && vote_direction === "up") {
@@ -374,6 +392,51 @@ exports.fetchArticleData = (
                 // }
               } else {
                 articleData.comment_count = parseInt(articleData.comment_count);
+
+                //Now we add the votes from the upvotes and downvotes.
+
+                const the_article_id_i_want = articleData.article_id;
+                return (
+                  connection
+                    .from("articles")
+                    .leftJoin(
+                      "users_articles_table",
+                      "articles.article_id",
+                      "users_articles_table.article_id"
+                    )
+                    .whereIn("users_articles_table.inc_votes", [-1, 1])
+                    .andWhere(
+                      "users_articles_table.article_id",
+                      the_article_id_i_want
+                    ) // change to placeholder!
+                    //.count({ voteeeeeee: "users_articles_table.article_id" })
+                    // .groupBy("articles.article_id")
+                    .select(
+                      "articles.article_id",
+                      // "articles.author",
+                      // "articles.title",
+                      // "articles.votes",
+                      // "articles.topic",
+                      //"articles.body", // Not desired at endpoint.
+                      // "articles.created_at",
+                      "users_articles_table.inc_votes"
+                    )
+                    .then(resArr => {
+                      let totalVotes = 0;
+                      resArr.forEach(item => {
+                        if (
+                          typeof item.inc_votes === "number" &&
+                          !isNaN(item.inc_votes)
+                        )
+                          totalVotes += item.inc_votes;
+                      });
+                      console.log(totalVotes);
+                      articleData.votes = parseInt(
+                        articleData.votes + parseInt(totalVotes)
+                      );
+                      return articleData;
+                    })
+                );
               }
               return articleData; // articleData is one article
             })
