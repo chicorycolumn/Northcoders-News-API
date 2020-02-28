@@ -1028,29 +1028,42 @@ describe("/api", () => {
     });
 
     describe("/:articleid", () => {
-      it("+++++GET 200 returns article object where vote is calculated by upvotes from users, add to base vote level from data file, limited to 10 items by default, starting page 1 by default", () => {
+      it.only("+++++GET 200 returns article object where vote is calculated by upvotes from users, add to base vote level from data file, limited to 10 items by default, starting page 1 by default", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: -1, voting_user: "butter_bridge" })
           .expect(200)
           .then(res => {
+            console.log("first patch done");
             return request(app)
               .patch("/api/articles/1")
               .send({ inc_votes: -1, voting_user: "lurker" })
               .expect(200)
               .then(res => {
+                console.log("second patch done");
                 return request(app)
                   .patch("/api/articles/1")
                   .send({ inc_votes: -1, voting_user: "icellusedkars" })
                   .expect(200)
                   .then(res => {
+                    console.log("third patch done");
                     return request(app)
-                      .get("/api/articles/1")
+                      .patch("/api/articles/2")
+                      .send({ inc_votes: 1, voting_user: "icellusedkars" })
                       .expect(200)
                       .then(res => {
-                        console.log(res.body.article);
-                        expect(res.body.article).to.be.an("Object");
-                        expect(res.body.article.votes).to.equal(97);
+                        console.log("fourth patch done");
+                        return request(app)
+                          .get("/api/articles/1")
+                          .expect(200)
+                          .then(res => {
+                            console.log(res.body.article);
+                            expect(res.body.article.votes).to.equal(97);
+                            expect(res.body.article.comment_count).to.equal(13);
+                            expect(res.body.article.article_id).to.equal(1);
+                            // expect(res.body.article).to.be.an("Object");
+                            // expect(res.body.article.votes).to.equal(97);
+                          });
                       });
                   });
               });

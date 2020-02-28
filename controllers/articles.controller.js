@@ -12,9 +12,13 @@ const {
 exports.getArticles = (req, res, next) => {
   fetchArticleData(req.params, req.query)
     .then(alreadyFormattedArticles => {
+      console.log("back in the u s s controller");
       res.send(alreadyFormattedArticles);
     })
-    .catch(err => next(err));
+    .catch(err => {
+      console.log(err);
+      next(err);
+    });
 };
 
 // exports.patchVoteToArticleByUser = (req, res, next) => {
@@ -43,8 +47,12 @@ exports.patchArticleDetails = (req, res, next) => {
 
 exports.getArticleByID = (req, res, next) => {
   fetchArticleData(req.params, req.query)
-    .then(article => res.send({ article }))
+    .then(article => {
+      console.log("Back in the article by ID controller");
+      res.send({ article });
+    })
     .catch(err => {
+      console.log(err);
       next(err);
     });
 };
