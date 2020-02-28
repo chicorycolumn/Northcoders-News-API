@@ -12,7 +12,6 @@ const {
 exports.getArticles = (req, res, next) => {
   fetchArticleData(req.params, req.query)
     .then(alreadyFormattedArticles => {
-      console.log("back in the u s s controller");
       res.send(alreadyFormattedArticles);
     })
     .catch(err => {
@@ -48,7 +47,6 @@ exports.patchArticleDetails = (req, res, next) => {
 exports.getArticleByID = (req, res, next) => {
   fetchArticleData(req.params, req.query)
     .then(article => {
-      console.log("Back in the article by ID controller");
       res.send({ article });
     })
     .catch(err => {

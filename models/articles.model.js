@@ -250,7 +250,7 @@ exports.updateArticleTitleTopicBodyOrAuthor = (
 exports.fetchArticleData = (
   { article_id },
   {
-    sort_by = "articles_data_with_comment_count.created_at",
+    sort_by,
     order = "desc",
     author,
     topic,
@@ -263,21 +263,23 @@ exports.fetchArticleData = (
     ...badUrlQueries
   }
 ) => {
+  console.log("srt_byyyyyyyyyyyy");
+  console.log(sort_by);
+  console.log("srt_byyyyyyyyyyyy");
   const currentDate = new Date();
   const startDate = new Date(currentDate - minutes * 60000);
   if (Object.keys(badUrlQueries).length) {
     return Promise.reject({ status: 400, customStatus: "400c" });
   }
 
+  console.log("Here we go..");
+
   function GET_COMMENT_COUNT_AND_ALL(qb) {
     qb.from("articles")
       .leftJoin("comments", "articles.article_id", "comments.article_id")
       .count({ comment_count: "comments.article_id" })
       .groupBy("articles.article_id")
-      .select("articles.*")
-      .then(x => {
-        return x;
-      });
+      .select("articles.*");
   }
 
   function GET_ADDITIONAL_VOTES(qb) {
@@ -296,6 +298,7 @@ exports.fetchArticleData = (
   }
 
   return (
+    //This is only selecting from junction table, thus, so far, is only capturing articles with upvotes/downvotes.
     connection
       .with("articles_data_with_comment_count", qb =>
         GET_COMMENT_COUNT_AND_ALL(qb)
@@ -314,74 +317,90 @@ exports.fetchArticleData = (
       //   return x;
       // })
 
-      .modify(queryBuilder => {
-        if (voted_by !== undefined && vote_direction === "up") {
-          queryBuilder = queryBuilder
-            .rightJoin(
-              "users_articles_table",
-              "articles_data_with_comment_count.article_id",
-              "users_articles_table.article_id"
-            )
-            .where("voting_user", voted_by)
-            .andWhere("inc_votes", 1);
-        } else if (voted_by !== undefined && vote_direction === "down") {
-          queryBuilder = queryBuilder
-            .rightJoin(
-              "users_articles_table",
-              "articles_data_with_comment_count.article_id",
-              "users_articles_table.article_id"
-            )
-            .where("voting_user", voted_by)
-            .andWhere("inc_votes", -1);
-        }
-      })
+      // .modify(queryBuilder => {
+      //   if (voted_by !== undefined && vote_direction === "up") {
+      //     queryBuilder = queryBuilder
+      //       .rightJoin(
+      //         "users_articles_table",
+      //         "articles_data_with_comment_count.article_id",
+      //         "users_articles_table.article_id"
+      //       )
+      //       .where("voting_user", voted_by)
+      //       .andWhere("inc_votes", 1);
+      //   } else if (voted_by !== undefined && vote_direction === "down") {
+      //     queryBuilder = queryBuilder
+      //       .rightJoin(
+      //         "users_articles_table",
+      //         "articles_data_with_comment_count.article_id",
+      //         "users_articles_table.article_id"
+      //       )
+      //       .where("voting_user", voted_by)
+      //       .andWhere("inc_votes", -1);
+      //   }
+      // })
 
       //************** */
-      .modify(queryBuilder => {
-        if (author !== undefined) {
-          queryBuilder.where("articles_data_with_comment_count.author", author);
-        }
-        if (topic !== undefined) {
-          queryBuilder.where("articles_data_with_comment_count.topic", topic);
-        }
-        if (title !== undefined) {
-          queryBuilder.where("articles_data_with_comment_count.title", title);
-        }
-      })
+      // .modify(queryBuilder => {
+      //   if (author !== undefined) {
+      //     queryBuilder.where("articles_data_with_comment_count.author", author);
+      //   }
+      //   if (topic !== undefined) {
+      //     queryBuilder.where("articles_data_with_comment_count.topic", topic);
+      //   }
+      //   if (title !== undefined) {
+      //     queryBuilder.where("articles_data_with_comment_count.title", title);
+      //   }
+      // })
 
-      //IT BREAKS HERE:
-      .where("articles_data_with_comment_count.created_at", ">=", startDate)
-      .orderBy(sort_by, order)
+      // HERE WE CANNOT ACCESS TOPIC EG
+      // .modify(queBuil => {
+      //   if (sort_by === undefined) {
+      //     sort_by = "created_at";
+      //   }
+      //   console.log("sort byyyyyyyyyyyyyyyyyy");
+      //   console.log(sort_by);
+      //   queBuil
+      //     .where("articles_data_with_comment_count.created_at", ">=", startDate)
+      //     .orderBy(`articles_data_with_comment_count.${sort_by}`, order);
+      // })
 
-      .modify(queryBuilder => {
-        if (article_id !== undefined) {
-          //Endpoint wants one article.
-          queryBuilder
-            .where("articles_data_with_comment_count.article_id", article_id)
-            .first(
-              "articles_data_with_comment_count.author",
-              "articles_data_with_comment_count.title",
-              "articles_data_with_comment_count.article_id",
-              "articles_data_with_comment_count.votes",
-              "articles_data_with_comment_count.topic",
-              "articles_data_with_comment_count.body",
-              "articles_data_with_comment_count.created_at"
-            );
-        } else {
-          // Endpoint wants many articles.
-          queryBuilder.select(
-            "articles_data_with_comment_count.author",
-            "articles_data_with_comment_count.title",
-            "articles_data_with_comment_count.article_id",
-            "articles_data_with_comment_count.votes",
-            "articles_data_with_comment_count.topic",
-            //"articles.body", // Not desired at endpoint.
-            "articles_data_with_comment_count.created_at"
-          );
-        }
-      })
+      // .modify(queryBuilder => {
+      //   if (sort_by === undefined) {
+      //     console.log("wheeeeeeeeeeeooo");
+      //   }
+      // })
+
+      // .modify(queryBuilder => {
+      //   if (article_id !== undefined) {
+      //     //Endpoint wants one article.
+      //     queryBuilder
+      //       .where("articles_data_with_comment_count.article_id", article_id)
+      //       .first(
+      //         "articles_data_with_comment_count.author",
+      //         "articles_data_with_comment_count.title",
+      //         "articles_data_with_comment_count.article_id",
+      //         "articles_data_with_comment_count.votes",
+      //         "articles_data_with_comment_count.topic",
+      //         "articles_data_with_comment_count.body",
+      //         "articles_data_with_comment_count.created_at"
+      //       );
+      //   } else {
+      //     // Endpoint wants many articles.
+      //     queryBuilder.select(
+      //       "articles_data_with_comment_count.author",
+      //       "articles_data_with_comment_count.title",
+      //       "articles_data_with_comment_count.article_id",
+      //       "articles_data_with_comment_count.votes",
+      //       "articles_data_with_comment_count.topic",
+      //       //"articles.body", // Not desired at endpoint.
+      //       "articles_data_with_comment_count.created_at"
+      //     );
+      //   }
+      // })
 
       .then(articleData => {
+        console.log("aaaaaaaaaaaaaaaaaaaaaaaarticleData");
+        console.log(articleData);
         if (articleData === undefined) {
           return Promise.reject({ status: 404, customStatus: "404a" });
         } else if (Array.isArray(articleData)) {
@@ -393,6 +412,7 @@ exports.fetchArticleData = (
             if (item.additionalVotes) {
               item.votes =
                 parseInt(item.votes) + parseInt(item.additionalVotes);
+              delete item.additionalVotes;
             }
           });
 
@@ -409,6 +429,7 @@ exports.fetchArticleData = (
             articleData.votes =
               parseInt(articleData.votes) +
               parseInt(articleData.additionalVotes);
+            delete articleData.additionalVotes;
           }
 
           return articleData;

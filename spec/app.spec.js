@@ -26,7 +26,7 @@ describe("/api", () => {
           expect(res.body.endpoints).to.eql(endpointsCopy);
         });
     });
-    it("-Responds 405 if any other methods are used at this endpoint", () => {
+    it("Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api";
       return Promise.all([
         request(app).del(url),
@@ -42,7 +42,7 @@ describe("/api", () => {
   });
 
   describe("/topics", () => {
-    it("**POST 201 responds with created topic.", () => {
+    it("POST 201 responds with created topic.", () => {
       return request(app)
         .post("/api/topics")
         .send({
@@ -59,7 +59,7 @@ describe("/api", () => {
         });
     });
 
-    it("**POST: 400a responds with error when missing fields", () => {
+    it("POST: 400a responds with error when missing fields", () => {
       return request(app)
         .post("/api/topics")
         .send({})
@@ -69,7 +69,7 @@ describe("/api", () => {
         });
     });
 
-    it("**POST: 400a responds with error when failing schema validation", () => {
+    it("POST: 400a responds with error when failing schema validation", () => {
       return request(app)
         .post("/api/topics")
         .send({
@@ -81,7 +81,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-    it("**POST: 400e responds with error when failing schema validation due to too long field", () => {
+    it("POST: 400e responds with error when failing schema validation due to too long field", () => {
       return request(app)
         .post("/api/topics")
         .send({
@@ -94,7 +94,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400e"]);
         });
     });
-    it("**POST 400a returns error when request contains other values.", () => {
+    it("POST 400a returns error when request contains other values.", () => {
       return request(app)
         .post("/api/topics")
         .send({
@@ -107,7 +107,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-    it("--Responds 405 if any other methods are used at this endpoint", () => {
+    it("Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/topics";
       return Promise.all([request(app).del(url), request(app).patch(url)]).then(
         resArr => {
@@ -172,7 +172,7 @@ describe("/api", () => {
           );
         });
     });
-    it("---Responds 405 if any other methods are used at this endpoint", () => {
+    it("Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/topics";
       return Promise.all([request(app).del(url), request(app).patch(url)]).then(
         resArr => {
@@ -185,7 +185,7 @@ describe("/api", () => {
     });
   });
   describe("/users", () => {
-    it("**POST 201 responds with created user.", () => {
+    it("POST 201 responds with created user.", () => {
       return request(app)
         .post("/api/users")
         .send({
@@ -206,7 +206,7 @@ describe("/api", () => {
         });
     });
 
-    it("**POST: 400a responds with error when missing fields", () => {
+    it("POST: 400a responds with error when missing fields", () => {
       return request(app)
         .post("/api/users")
         .send({})
@@ -216,7 +216,7 @@ describe("/api", () => {
         });
     });
 
-    it("**POST: 400a responds with error when failing schema validation", () => {
+    it("POST: 400a responds with error when failing schema validation", () => {
       return request(app)
         .post("/api/users")
         .send({
@@ -229,7 +229,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-    it("**POST: 400e responds with error when failing schema validation due to too long field", () => {
+    it("POST: 400e responds with error when failing schema validation due to too long field", () => {
       return request(app)
         .post("/api/users")
         .send({
@@ -243,7 +243,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400e"]);
         });
     });
-    it("**POST 400a returns error when request contains other values.", () => {
+    it("POST 400a returns error when request contains other values.", () => {
       return request(app)
         .post("/api/users")
         .send({
@@ -258,7 +258,7 @@ describe("/api", () => {
         });
     });
 
-    it("**GET 200 returns array of all users.", () => {
+    it("GET 200 returns array of all users.", () => {
       return request(app)
         .get("/api/users")
         .expect(200)
@@ -269,7 +269,7 @@ describe("/api", () => {
           );
         });
     });
-    it("----Responds 405 if any other methods are used at this endpoint", () => {
+    it("Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/users";
       return Promise.all([request(app).del(url)]).then(resArr => {
         resArr.forEach(response => {
@@ -290,9 +290,6 @@ describe("/api", () => {
               .get("/api/users/icellusedkars")
               .expect(200)
               .then(res => {
-                console.log("Spec receives...");
-                console.log(res.body.user);
-                console.log("...you see.");
                 expect(res.body.user.username).to.equal("icellusedkars");
                 expect(res.body.user.name).to.equal("Samuel");
               });
@@ -420,7 +417,7 @@ describe("/api", () => {
           });
       });
     });
-    it("-----Responds 405 if any other methods are used at this endpoint", () => {
+    it("Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/users/:username";
       return Promise.all([request(app).del(url), request(app).post(url)]).then(
         resArr => {
@@ -433,17 +430,37 @@ describe("/api", () => {
     });
   });
   describe("/articles", () => {
-    it("##GET 200 returns an array of article objects, limited to 10 items by default, starting page 1 by default", () => {
-      return request(app)
-        .get("/api/articles")
-        .expect(200)
-        .then(res => {
-          expect(res.body.articles).to.be.an("Array");
-          expect(res.body.articles.length).to.equal(10);
-          expect(res.body.total_count).to.equal(12);
-        });
+    // Hey listen up! The function may only bring back articles with votes in the junction table, rather than all articles. We finna fix dat.
+    it.only("GET 200 returns an array of article objects, limited to 10 items by default, starting page 1 by default", () => {
+      return Promise.all([
+        request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: -1, voting_user: "butter_bridge" }),
+
+        request(app)
+          .patch("/api/articles/2")
+          .send({ inc_votes: -1, voting_user: "lurker" }),
+
+        request(app)
+          .patch("/api/articles/3")
+          .send({ inc_votes: 1, voting_user: "icellusedkars" }),
+
+        request(app)
+          .patch("/api/articles/4")
+          .send({ inc_votes: 1, voting_user: "icellusedkars" })
+      ]).then(res => {
+        return request(app)
+          .get("/api/articles")
+          .expect(200)
+          .then(res => {
+            console.log(res.body.articles);
+            expect(res.body.articles).to.be.an("Array");
+            expect(res.body.articles.length).to.equal(10);
+            expect(res.body.total_count).to.equal(12);
+          });
+      });
     });
-    it("##GET 200 returns an array of article objects, can ?query for articles from the last so many minutes.", () => {
+    it("GET 200 returns an array of article objects, can ?query for articles from the last so many minutes.", () => {
       return request(app)
         .get("/api/articles?minutes=10000000")
         .expect(200)
@@ -454,7 +471,7 @@ describe("/api", () => {
         });
     });
 
-    it("##GET 200 returns an array of article objects, limit specifiable", () => {
+    it("GET 200 returns an array of article objects, limit specifiable", () => {
       return request(app)
         .get("/api/articles?limit=6")
         .expect(200)
@@ -465,7 +482,7 @@ describe("/api", () => {
         });
     });
 
-    it("##GET 200 returns an array of article objects, page and limit specifiable", () => {
+    it("GET 200 returns an array of article objects, page and limit specifiable", () => {
       return request(app)
         .get("/api/articles?limit=6&p=1")
         .expect(200)
@@ -524,11 +541,13 @@ describe("/api", () => {
           expect(res.body.articles[8].comment_count).to.equal(2);
         });
     });
-    it("GET 200 articles array is sorted by any valid column from articles table, like topic.", () => {
+    it("onlyGET 200 articles array is sorted by any valid column from articles table, like topic.", () => {
       return request(app)
         .get("/api/articles?sort_by=topic")
         .expect(200)
         .then(res => {
+          console.log("******************");
+          console.log(res.body.articles);
           expect(res.body.articles).to.be.an("Array");
           res.body.articles.forEach(article =>
             expect(article).to.have.all.keys([
@@ -543,6 +562,29 @@ describe("/api", () => {
           );
           expect(res.body.articles).to.be.sortedBy("topic", {
             descending: true
+          });
+        });
+    });
+    it("onlyGET 200 articles array is sorted by any valid column with order specifiable.", () => {
+      return request(app)
+        .get("/api/articles?sort_by=votes&order=asc")
+        .expect(200)
+        .then(res => {
+          console.log(res.body.articles);
+          expect(res.body.articles).to.be.an("Array");
+          res.body.articles.forEach(article =>
+            expect(article).to.have.all.keys([
+              "author",
+              "title",
+              "article_id",
+              "topic",
+              "created_at",
+              "votes",
+              "comment_count"
+            ])
+          );
+          expect(res.body.articles).to.be.sortedBy("votes", {
+            descending: false
           });
         });
     });
@@ -568,28 +610,6 @@ describe("/api", () => {
           });
         });
     });
-    it("GET 200 articles array is sorted by any valid column with order specifiable.", () => {
-      return request(app)
-        .get("/api/articles?sort_by=votes&order=asc")
-        .expect(200)
-        .then(res => {
-          expect(res.body.articles).to.be.an("Array");
-          res.body.articles.forEach(article =>
-            expect(article).to.have.all.keys([
-              "author",
-              "title",
-              "article_id",
-              "topic",
-              "created_at",
-              "votes",
-              "comment_count"
-            ])
-          );
-          expect(res.body.articles).to.be.sortedBy("votes", {
-            descending: false
-          });
-        });
-    });
     it("GET 200 articles array is sorted by comment_count with order specifiable", () => {
       return request(app)
         .get("/api/articles?sort_by=comment_count&order=asc")
@@ -612,7 +632,7 @@ describe("/api", () => {
           });
         });
     });
-    it("^^^GET 200 articles array is filtered by title where title is one word.", () => {
+    it("GET 200 articles array is filtered by title where title is one word.", () => {
       return request(app)
         .get("/api/articles?title=Moustache")
         .expect(200)
@@ -638,7 +658,7 @@ describe("/api", () => {
           );
         });
     });
-    it("^^^GET 200 articles array is filtered by title where title is many words.", () => {
+    it("GET 200 articles array is filtered by title where title is many words.", () => {
       return request(app)
         .get("/api/articles?title=Am I a cat?")
         .expect(200)
@@ -716,7 +736,7 @@ describe("/api", () => {
           //expect(res.body.articles.length).to.equal(11) //Pagination could interfere with this.
         });
     });
-    it(">>>>GET 200 articles array filtered by user who upvoted them.", () => {
+    it("GET 200 articles array filtered by user who upvoted them.", () => {
       return request(app)
         .patch("/api/articles/1")
         .send({ inc_votes: 1, voting_user: "lurker" })
@@ -756,7 +776,7 @@ describe("/api", () => {
             });
         });
     });
-    it(">>>>GET 200 articles array filtered by user who downvoted them.", () => {
+    it("GET 200 articles array filtered by user who downvoted them.", () => {
       return request(app)
         .patch("/api/articles/1")
         .send({ inc_votes: 1, voting_user: "butter_bridge" })
@@ -845,7 +865,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400c"]);
         });
     });
-    it("=Responds 405 if any other methods are used at this endpoint", () => {
+    it("Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/articles";
       return Promise.all([request(app).del(url), request(app).patch(url)]).then(
         resArr => {
@@ -857,7 +877,7 @@ describe("/api", () => {
       );
     });
 
-    it("***POST 201 responds with created article.", () => {
+    it("POST 201 responds with created article.", () => {
       return request(app)
         .post("/api/articles")
         .send({
@@ -885,7 +905,7 @@ describe("/api", () => {
         });
     });
 
-    it("****POST 201 responds with created article, including can specify how many votes.", () => {
+    it("POST 201 responds with created article, including can specify how many votes.", () => {
       return request(app)
         .post("/api/articles")
         .send({
@@ -914,7 +934,7 @@ describe("/api", () => {
         });
     });
 
-    it("****POST 404c responds error if topic specified in request body not exist.", () => {
+    it("POST 404c responds error if topic specified in request body not exist.", () => {
       return request(app)
         .post("/api/articles")
         .send({
@@ -930,7 +950,7 @@ describe("/api", () => {
         });
     });
 
-    it("****POST 404c responds error if author specified in request body not exist", () => {
+    it("POST 404c responds error if author specified in request body not exist", () => {
       return request(app)
         .post("/api/articles")
         .send({
@@ -946,7 +966,7 @@ describe("/api", () => {
         });
     });
 
-    it("**POST: 400a responds with error when missing fields", () => {
+    it("POST: 400a responds with error when missing fields", () => {
       return request(app)
         .post("/api/articles")
         .send({})
@@ -956,7 +976,7 @@ describe("/api", () => {
         });
     });
 
-    it("**POST: 400a responds with error when failing schema validation", () => {
+    it("POST: 400a responds with error when failing schema validation", () => {
       return request(app)
         .post("/api/articles")
         .send({
@@ -970,7 +990,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-    it("**POST: 400a responds with error when failing schema validation due to too long field", () => {
+    it("POST: 400a responds with error when failing schema validation due to too long field", () => {
       return request(app)
         .post("/api/articles")
         .send({
@@ -985,7 +1005,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-    it("**POST 400a returns error when request contains other values.", () => {
+    it("POST 400a returns error when request contains other values.", () => {
       return request(app)
         .post("/api/articles")
         .send({
@@ -1000,7 +1020,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-    it("**POST 400b returns error when value is wrong type in request.", () => {
+    it("POST 400b returns error when value is wrong type in request.", () => {
       return request(app)
         .post("/api/articles")
         .send({
@@ -1015,7 +1035,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400b"]);
         });
     });
-    it("==Responds 405 if any other methods are used at this endpoint", () => {
+    it("Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/articles";
       return Promise.all([request(app).del(url), request(app).patch(url)]).then(
         resArr => {
@@ -1028,49 +1048,36 @@ describe("/api", () => {
     });
 
     describe("/:articleid", () => {
-      it.only("+++++GET 200 returns article object where vote is calculated by upvotes from users, add to base vote level from data file, limited to 10 items by default, starting page 1 by default", () => {
-        return request(app)
-          .patch("/api/articles/1")
-          .send({ inc_votes: -1, voting_user: "butter_bridge" })
-          .expect(200)
-          .then(res => {
-            console.log("first patch done");
-            return request(app)
-              .patch("/api/articles/1")
-              .send({ inc_votes: -1, voting_user: "lurker" })
-              .expect(200)
-              .then(res => {
-                console.log("second patch done");
-                return request(app)
-                  .patch("/api/articles/1")
-                  .send({ inc_votes: -1, voting_user: "icellusedkars" })
-                  .expect(200)
-                  .then(res => {
-                    console.log("third patch done");
-                    return request(app)
-                      .patch("/api/articles/2")
-                      .send({ inc_votes: 1, voting_user: "icellusedkars" })
-                      .expect(200)
-                      .then(res => {
-                        console.log("fourth patch done");
-                        return request(app)
-                          .get("/api/articles/1")
-                          .expect(200)
-                          .then(res => {
-                            console.log(res.body.article);
-                            expect(res.body.article.votes).to.equal(97);
-                            expect(res.body.article.comment_count).to.equal(13);
-                            expect(res.body.article.article_id).to.equal(1);
-                            // expect(res.body.article).to.be.an("Object");
-                            // expect(res.body.article.votes).to.equal(97);
-                          });
-                      });
-                  });
-              });
-          });
+      it("GET 200 returns article object where vote is calculated by upvotes from users, add to base vote level from data file, limited to 10 items by default, starting page 1 by default", () => {
+        return Promise.all([
+          request(app)
+            .patch("/api/articles/1")
+            .send({ inc_votes: -1, voting_user: "butter_bridge" }),
+
+          request(app)
+            .patch("/api/articles/1")
+            .send({ inc_votes: -1, voting_user: "lurker" }),
+
+          request(app)
+            .patch("/api/articles/1")
+            .send({ inc_votes: -1, voting_user: "icellusedkars" }),
+
+          request(app)
+            .patch("/api/articles/2")
+            .send({ inc_votes: 1, voting_user: "icellusedkars" })
+        ]).then(res => {
+          return request(app)
+            .get("/api/articles/1")
+            .expect(200)
+            .then(res => {
+              expect(res.body.article.votes).to.equal(97);
+              expect(res.body.article.comment_count).to.equal(13);
+              expect(res.body.article.article_id).to.equal(1);
+            });
+        });
       });
 
-      it("++GET 200 returns article object where vote is calculated by downvotes and upvotes from users, add to base vote level from data file, limited to 10 items by default, starting page 1 by default", () => {
+      it("GET 200 returns article object where vote is calculated by downvotes and upvotes from users, add to base vote level from data file, limited to 10 items by default, starting page 1 by default", () => {
         return request(app)
           .patch("/api/articles/2")
           .send({ inc_votes: -1, voting_user: "butter_bridge" })
@@ -1090,7 +1097,6 @@ describe("/api", () => {
                       .get("/api/articles/2")
                       .expect(200)
                       .then(res => {
-                        console.log(res.body.article);
                         expect(res.body.article).to.be.an("Object");
                         expect(res.body.article.votes).to.equal(-1);
                       });
@@ -1099,7 +1105,7 @@ describe("/api", () => {
           });
       });
 
-      it("++GET 200 returns article object where vote is calculated by downvotes and upvotes, and not interfered with by votes on other articles", () => {
+      it("GET 200 returns article object where vote is calculated by downvotes and upvotes, and not interfered with by votes on other articles", () => {
         return request(app)
           .patch("/api/articles/2")
           .send({ inc_votes: 1, voting_user: "butter_bridge" })
@@ -1119,7 +1125,6 @@ describe("/api", () => {
                       .get("/api/articles/2")
                       .expect(200)
                       .then(res => {
-                        console.log(res.body.article);
                         expect(res.body.article).to.be.an("Object");
                         expect(res.body.article.votes).to.equal(2);
                       });
@@ -1128,7 +1133,7 @@ describe("/api", () => {
           });
       });
 
-      it("###DELETE 204 all comments associated with that article are deleted too!", () => {
+      it("DELETE 204 all comments associated with that article are deleted too!", () => {
         return request(app)
           .del("/api/articles/1")
           .expect(204)
@@ -1139,7 +1144,7 @@ describe("/api", () => {
           });
       });
 
-      it("**DELETE 204 returns no body after sucessful deletion", () => {
+      it("DELETE 204 returns no body after sucessful deletion", () => {
         return request(app)
           .del("/api/articles/3")
           .expect(204)
@@ -1147,7 +1152,7 @@ describe("/api", () => {
             expect(res.body).to.eql({});
           });
       });
-      it("**DELETE 204   It was... definitely deleted, right?", () => {
+      it("DELETE 204   It was... definitely deleted, right?", () => {
         return request(app)
           .del("/api/articles/4")
           .expect(204)
@@ -1161,7 +1166,7 @@ describe("/api", () => {
               });
           });
       });
-      it("**DELETE 404a if id valid but nonexistent.", () => {
+      it("DELETE 404a if id valid but nonexistent.", () => {
         return request(app)
           .del("/api/articles/6666")
           .expect(404)
@@ -1169,7 +1174,7 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["404a"]);
           });
       });
-      it("**DELETE 400b if invalid id.", () => {
+      it("DELETE 400b if invalid id.", () => {
         return request(app)
           .del("/api/articles/INVALID_ID")
           .expect(400)
@@ -1177,7 +1182,7 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["400b"]);
           });
       });
-      it("===Responds 405 if any other methods are used at this endpoint", () => {
+      it("Responds 405 if any other methods are used at this endpoint", () => {
         const url = "/api/articles/2";
         return Promise.all([request(app).post(url)]).then(resArr => {
           resArr.forEach(response => {
@@ -1231,7 +1236,7 @@ describe("/api", () => {
           });
       });
 
-      it("~~~PATCH 200 Adds row to junction table re re user adding a vote to an article.", () => {
+      it("PATCH 200 Adds row to junction table re re user adding a vote to an article.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: 1, voting_user: "butter_bridge" })
@@ -1245,7 +1250,7 @@ describe("/api", () => {
           });
       });
 
-      it("~~~PATCH 200 Adds row to junction table re user adding a negative vote to an article.", () => {
+      it("PATCH 200 Adds row to junction table re user adding a negative vote to an article.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: -1, voting_user: "butter_bridge" })
@@ -1259,28 +1264,28 @@ describe("/api", () => {
           });
       });
 
-      it("~~~PATCH 404 You cannot upvote from nonexistent user.", () => {
+      it("PATCH 404 You cannot upvote from nonexistent user.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: -1, voting_user: "NON_EXI_USER" })
           .expect(404); // What is best error message?
       });
 
-      it("~~~PATCH 400 User cannot submit a number greater 1 as a vote.", () => {
+      it("PATCH 400 User cannot submit a number greater 1 as a vote.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: 2, voting_user: "butter_bridge" })
           .expect(400); // What is best error message?
       });
 
-      it("~~~PATCH 400 User cannot submit a number less than -1 as a vote.", () => {
+      it("PATCH 400 User cannot submit a number less than -1 as a vote.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: -2, voting_user: "butter_bridge" })
           .expect(400); // What is best error message?
       });
 
-      it("~~~PATCH 400 User cannot upvote same article more than once.", () => {
+      it("PATCH 400 User cannot upvote same article more than once.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: 1, voting_user: "butter_bridge" })
@@ -1293,7 +1298,7 @@ describe("/api", () => {
           });
       });
 
-      it("~~~PATCH 400 User cannot downvote same article more than once.", () => {
+      it("PATCH 400 User cannot downvote same article more than once.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: -1, voting_user: "butter_bridge" })
@@ -1306,7 +1311,7 @@ describe("/api", () => {
           });
       });
 
-      it("~~~PATCH 400 User can negate their downvote with a subsequent upvote and then upvote again.", () => {
+      it("PATCH 400 User can negate their downvote with a subsequent upvote and then upvote again.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: -1, voting_user: "butter_bridge" })
@@ -1331,7 +1336,7 @@ describe("/api", () => {
           });
       });
 
-      it("~~~PATCH 400 User can negate their upvote with a subsequent downvote and then downvote again.", () => {
+      it("PATCH 400 User can negate their upvote with a subsequent downvote and then downvote again.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: 1, voting_user: "butter_bridge" })
@@ -1356,7 +1361,7 @@ describe("/api", () => {
           });
       });
 
-      it("~~~PATCH 400 User can negate their upvote with a subsequent downvote and then upvote again.", () => {
+      it("PATCH 400 User can negate their upvote with a subsequent downvote and then upvote again.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: 1, voting_user: "butter_bridge" })
@@ -1567,7 +1572,7 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["400a"]);
           });
       });
-      it("====Responds 405 if any other methods are used at this endpoint", () => {
+      it("Responds 405 if any other methods are used at this endpoint", () => {
         const url = "/api/articles/3";
         return Promise.all([request(app).post(url)]).then(resArr => {
           resArr.forEach(response => {
@@ -1578,7 +1583,7 @@ describe("/api", () => {
       });
 
       describe("/comments", () => {
-        it("##GET 200 returns an array of comment objects, limited to 10 items by default, starting page 1 by default", () => {
+        it("GET 200 returns an array of comment objects, limited to 10 items by default, starting page 1 by default", () => {
           return request(app)
             .get("/api/articles/1/comments")
             .expect(200)
@@ -1589,7 +1594,7 @@ describe("/api", () => {
             });
         });
 
-        it("##GET 200 returns an array of comment objects, page and limit specifiable", () => {
+        it("GET 200 returns an array of comment objects, page and limit specifiable", () => {
           return request(app)
             .get("/api/articles/1/comments?limit=6")
             .expect(200)
@@ -1600,7 +1605,7 @@ describe("/api", () => {
             });
         });
 
-        it("##GET 200 returns an array of comment objects, page and limit specifiable", () => {
+        it("GET 200 returns an array of comment objects, page and limit specifiable", () => {
           return request(app)
             .get("/api/articles/1/comments?limit=6&p=1")
             .expect(200)
@@ -1736,7 +1741,7 @@ describe("/api", () => {
               expect(res.body.msg).to.eql(myErrMsgs["404c"]);
             });
         });
-        it("--POST: 400a responds with error when missing fields", () => {
+        it("POST: 400a responds with error when missing fields", () => {
           return request(app)
             .post("/api/articles/5/comments")
             .send({})
@@ -1767,7 +1772,7 @@ describe("/api", () => {
               expect(res.body.msg).to.equal(myErrMsgs["404a"]);
             });
         });
-        it("--POST 400b if invalid id.", () => {
+        it("POST 400b if invalid id.", () => {
           return request(app)
             .post("/api/articles/INVALID_ID/comments")
             .send({ username: "Genghis", body: "Not enough pillaging" })
@@ -1789,7 +1794,7 @@ describe("/api", () => {
               expect(res.body.msg).to.equal(myErrMsgs["400a"]);
             });
         });
-        it("=====Responds 405 if any other methods are used at this endpoint", () => {
+        it("Responds 405 if any other methods are used at this endpoint", () => {
           const url = "/api/articles/4/comments";
           return Promise.all([
             request(app).del(url),
