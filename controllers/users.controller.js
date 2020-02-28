@@ -6,7 +6,6 @@ const {
 } = require("../models/users.model");
 
 exports.patchUserDetails = (req, res, next) => {
-  console.log("cooooooooooooooooooooon");
   updateUserDetails(req.params, req.body)
     .then(user => res.send({ user }))
     .catch(err => next(err));

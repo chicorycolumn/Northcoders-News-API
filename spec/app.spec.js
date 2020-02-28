@@ -26,7 +26,7 @@ describe("/api", () => {
           expect(res.body.endpoints).to.eql(endpointsCopy);
         });
     });
-    it("Responds 405 if any other methods are used at this endpoint", () => {
+    it("-Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api";
       return Promise.all([
         request(app).del(url),
@@ -107,7 +107,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-    it("**Responds 405 if any other methods are used at this endpoint", () => {
+    it("--Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/topics";
       return Promise.all([request(app).del(url), request(app).patch(url)]).then(
         resArr => {
@@ -172,7 +172,7 @@ describe("/api", () => {
           );
         });
     });
-    it("Responds 405 if any other methods are used at this endpoint", () => {
+    it("---Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/topics";
       return Promise.all([request(app).del(url), request(app).patch(url)]).then(
         resArr => {
@@ -269,16 +269,14 @@ describe("/api", () => {
           );
         });
     });
-    it("Responds 405 if any other methods are used at this endpoint", () => {
+    it("----Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/users";
-      return Promise.all([request(app).del(url), request(app).patch(url)]).then(
-        resArr => {
-          resArr.forEach(response => {
-            expect(405);
-            expect(response.body.msg).to.equal(myErrMsgs["405"]);
-          });
-        }
-      );
+      return Promise.all([request(app).del(url)]).then(resArr => {
+        resArr.forEach(response => {
+          expect(405);
+          expect(response.body.msg).to.equal(myErrMsgs["405"]);
+        });
+      });
     });
 
     describe("/:username", () => {
@@ -351,7 +349,6 @@ describe("/api", () => {
           .send({})
           .expect(200)
           .then(res => {
-            console.log(res.body.user);
             expect(res.body.user).to.eql({
               username: "icellusedkars",
               avatar_url:
@@ -420,18 +417,16 @@ describe("/api", () => {
           });
       });
     });
-    it("Responds 405 if any other methods are used at this endpoint", () => {
+    it("-----Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/users/:username";
-      return Promise.all([
-        request(app).del(url),
-        request(app).patch(url),
-        request(app).post(url)
-      ]).then(resArr => {
-        resArr.forEach(response => {
-          expect(405);
-          expect(response.body.msg).to.equal(myErrMsgs["405"]);
-        });
-      });
+      return Promise.all([request(app).del(url), request(app).post(url)]).then(
+        resArr => {
+          resArr.forEach(response => {
+            expect(405);
+            expect(response.body.msg).to.equal(myErrMsgs["405"]);
+          });
+        }
+      );
     });
   });
   describe("/articles", () => {
@@ -847,7 +842,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400c"]);
         });
     });
-    it("Responds 405 if any other methods are used at this endpoint", () => {
+    it("=Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/articles";
       return Promise.all([request(app).del(url), request(app).patch(url)]).then(
         resArr => {
@@ -1017,7 +1012,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400b"]);
         });
     });
-    it("**Responds 405 if any other methods are used at this endpoint", () => {
+    it("==Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/articles";
       return Promise.all([request(app).del(url), request(app).patch(url)]).then(
         resArr => {
@@ -1079,7 +1074,7 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["400b"]);
           });
       });
-      it("**Responds 405 if any other methods are used at this endpoint", () => {
+      it("===Responds 405 if any other methods are used at this endpoint", () => {
         const url = "/api/articles/2";
         return Promise.all([request(app).post(url)]).then(resArr => {
           resArr.forEach(response => {
@@ -1469,7 +1464,7 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["400a"]);
           });
       });
-      it("Responds 405 if any other methods are used at this endpoint", () => {
+      it("====Responds 405 if any other methods are used at this endpoint", () => {
         const url = "/api/articles/3";
         return Promise.all([request(app).post(url)]).then(resArr => {
           resArr.forEach(response => {
@@ -1691,7 +1686,7 @@ describe("/api", () => {
               expect(res.body.msg).to.equal(myErrMsgs["400a"]);
             });
         });
-        it("Responds 405 if any other methods are used at this endpoint", () => {
+        it("=====Responds 405 if any other methods are used at this endpoint", () => {
           const url = "/api/articles/4/comments";
           return Promise.all([
             request(app).del(url),
@@ -1768,7 +1763,6 @@ describe("/api", () => {
           })
           .expect(200)
           .then(res => {
-            console.log(res.body.comment);
             return request(app)
               .get("/api/comments/2")
               .expect(200)
@@ -1932,7 +1926,7 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["400b"]);
           });
       });
-      it("Responds 405 if any other methods are used at this endpoint", () => {
+      it("]Responds 405 if any other methods are used at this endpoint", () => {
         const url = "/api/comments/2";
         return Promise.all([request(app).post(url)]).then(resArr => {
           resArr.forEach(response => {

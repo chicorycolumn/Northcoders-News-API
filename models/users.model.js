@@ -5,7 +5,6 @@ exports.updateUserDetails = (
   { name, avatar_url, ...badKeys },
   queries
 ) => {
-  console.log("moooooooooooooooooooood");
   if (Object.keys(badKeys).length > 0) {
     return Promise.reject({ status: 400, customStatus: "400a" });
   } else
