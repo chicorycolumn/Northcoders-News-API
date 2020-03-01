@@ -16,8 +16,10 @@ describe("/api", () => {
     return connection.seed.run(); // knex looks in the knexfile to find seed file, and the former contains a link to it.
   });
 
+  //The order is GET PATCH POST DELETE
+
   describe("/", () => {
-    it("Serves up endpoints", () => {
+    it("GET 200 Serves up endpoints", () => {
       return request(app)
         .get("/api")
         .expect(200)
@@ -42,7 +44,60 @@ describe("/api", () => {
   });
 
   describe("/topics", () => {
-    it("POST 201 responds with created topic.", () => {
+    //Topics endpoint does not currently accept queries.
+    // it("GET 200 returns an array of topic objects, limited to 10 items by default, starting page 1 by default", () => {
+    //   return request(app)
+    //     .get("/api/topics")
+    //     .expect(200)
+    //     .then(res => {
+    //       expect(res.body.topics).to.be.an("Array");
+    //       expect(res.body.topics.length).to.equal(10);
+    //       expect(res.body.total_count).to.equal(13);
+    //     });
+    // });
+
+    // it("GET 200 returns an array of topic objects, page and limit specifiable", () => {
+    //   return request(app)
+    //     .get("/api/topics?limit=6")
+    //     .expect(200)
+    //     .then(res => {
+    //       expect(res.body.topics).to.be.an("Array");
+    //       expect(res.body.topics.length).to.equal(6);
+    //       expect(res.body.total_count).to.equal(13);
+    //     });
+    // });
+
+    // it("GET 200 returns an array of comment objects, page and limit specifiable", () => {
+    //   return request(app)
+    //     .get("/api/topics?limit=6&p=1")
+    //     .expect(200)
+    //     .then(firstSixTopics => {
+    //       return request(app)
+    //         .get("/api/topics?limit=3&p=2")
+    //         .expect(200)
+    //         .then(secondThreeTopics => {
+    //           expect(secondThreeTopics.body.topics).to.be.an("Array");
+    //           expect(secondThreeTopics.body.topics.length).to.equal(3);
+    //           expect(secondThreeTopics.body.total_count).to.equal(13);
+    //           expect(firstSixTopics.body.topics.slice(3, 6)).to.eql(
+    //             secondThreeTopics.body.topics
+    //           );
+    //         });
+    //     });
+    // });
+
+    it("GET 200 returns array of all topics, with slug and description. #fetchTopics", () => {
+      return request(app)
+        .get("/api/topics")
+        .expect(200)
+        .then(res => {
+          expect(res.body.topics).to.be.an("Array");
+          res.body.topics.forEach(topic =>
+            expect(topic).to.have.all.keys(["slug", "description"])
+          );
+        });
+    });
+    it("POST 201 responds with created topic. #createNewTopic", () => {
       return request(app)
         .post("/api/topics")
         .send({
@@ -59,7 +114,7 @@ describe("/api", () => {
         });
     });
 
-    it("POST: 400a responds with error when missing fields", () => {
+    it("POST 400a responds with error when missing fields", () => {
       return request(app)
         .post("/api/topics")
         .send({})
@@ -69,7 +124,7 @@ describe("/api", () => {
         });
     });
 
-    it("POST: 400a responds with error when failing schema validation", () => {
+    it("POST 400a responds with error when failing schema validation", () => {
       return request(app)
         .post("/api/topics")
         .send({
@@ -81,7 +136,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-    it("POST: 400e responds with error when failing schema validation due to too long field", () => {
+    it("POST 400e responds with error when failing schema validation due to too long field", () => {
       return request(app)
         .post("/api/topics")
         .send({
@@ -118,74 +173,20 @@ describe("/api", () => {
         }
       );
     });
-
-    //Topics endpoint does not currently accept queries.
-    // it("##GET 200 returns an array of topic objects, limited to 10 items by default, starting page 1 by default", () => {
-    //   return request(app)
-    //     .get("/api/topics")
-    //     .expect(200)
-    //     .then(res => {
-    //       expect(res.body.topics).to.be.an("Array");
-    //       expect(res.body.topics.length).to.equal(10);
-    //       expect(res.body.total_count).to.equal(13);
-    //     });
-    // });
-
-    // it("##GET 200 returns an array of topic objects, page and limit specifiable", () => {
-    //   return request(app)
-    //     .get("/api/topics?limit=6")
-    //     .expect(200)
-    //     .then(res => {
-    //       expect(res.body.topics).to.be.an("Array");
-    //       expect(res.body.topics.length).to.equal(6);
-    //       expect(res.body.total_count).to.equal(13);
-    //     });
-    // });
-
-    // it("##GET 200 returns an array of comment objects, page and limit specifiable", () => {
-    //   return request(app)
-    //     .get("/api/topics?limit=6&p=1")
-    //     .expect(200)
-    //     .then(firstSixTopics => {
-    //       return request(app)
-    //         .get("/api/topics?limit=3&p=2")
-    //         .expect(200)
-    //         .then(secondThreeTopics => {
-    //           expect(secondThreeTopics.body.topics).to.be.an("Array");
-    //           expect(secondThreeTopics.body.topics.length).to.equal(3);
-    //           expect(secondThreeTopics.body.total_count).to.equal(13);
-    //           expect(firstSixTopics.body.topics.slice(3, 6)).to.eql(
-    //             secondThreeTopics.body.topics
-    //           );
-    //         });
-    //     });
-    // });
-
-    it("GET 200 returns array of all topics, with slug and description.", () => {
+  });
+  describe("/users", () => {
+    it("GET 200 returns array of all users. #fetchUsers", () => {
       return request(app)
-        .get("/api/topics")
+        .get("/api/users")
         .expect(200)
         .then(res => {
-          expect(res.body.topics).to.be.an("Array");
-          res.body.topics.forEach(topic =>
-            expect(topic).to.have.all.keys(["slug", "description"])
+          expect(res.body.users).to.be.an("Array");
+          res.body.users.forEach(user =>
+            expect(user).to.have.all.keys(["username", "avatar_url", "name"])
           );
         });
     });
-    it("Responds 405 if any other methods are used at this endpoint", () => {
-      const url = "/api/topics";
-      return Promise.all([request(app).del(url), request(app).patch(url)]).then(
-        resArr => {
-          resArr.forEach(response => {
-            expect(405);
-            expect(response.body.msg).to.equal(myErrMsgs["405"]);
-          });
-        }
-      );
-    });
-  });
-  describe("/users", () => {
-    it("POST 201 responds with created user.", () => {
+    it("POST 201 responds with created user. #createNewUser", () => {
       return request(app)
         .post("/api/users")
         .send({
@@ -205,8 +206,7 @@ describe("/api", () => {
           expect(res.body.user.username).to.equal("queen");
         });
     });
-
-    it("POST: 400a responds with error when missing fields", () => {
+    it("POST 400a responds with error when missing fields", () => {
       return request(app)
         .post("/api/users")
         .send({})
@@ -215,8 +215,7 @@ describe("/api", () => {
           expect(res.body.msg).to.eql(myErrMsgs["400a"]);
         });
     });
-
-    it("POST: 400a responds with error when failing schema validation", () => {
+    it("POST 400a responds with error when failing schema validation", () => {
       return request(app)
         .post("/api/users")
         .send({
@@ -229,7 +228,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-    it("POST: 400e responds with error when failing schema validation due to too long field", () => {
+    it("POST 400e responds with error when failing schema validation due to too long field", () => {
       return request(app)
         .post("/api/users")
         .send({
@@ -257,18 +256,6 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-
-    it("GET 200 returns array of all users.", () => {
-      return request(app)
-        .get("/api/users")
-        .expect(200)
-        .then(res => {
-          expect(res.body.users).to.be.an("Array");
-          res.body.users.forEach(user =>
-            expect(user).to.have.all.keys(["username", "avatar_url", "name"])
-          );
-        });
-    });
     it("Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/users";
       return Promise.all([request(app).del(url)]).then(resArr => {
@@ -280,119 +267,7 @@ describe("/api", () => {
     });
 
     describe("/:username", () => {
-      it("PATCH 200 returns updated user with name changed according to request body", () => {
-        return request(app)
-          .patch("/api/users/icellusedkars")
-          .send({ name: "Samuel" })
-          .expect(200)
-          .then(res => {
-            return request(app)
-              .get("/api/users/icellusedkars")
-              .expect(200)
-              .then(res => {
-                expect(res.body.user.username).to.equal("icellusedkars");
-                expect(res.body.user.name).to.equal("Samuel");
-              });
-          });
-      });
-      it("PATCH 200 returns updated user with avatar_url changed according to request body", () => {
-        return request(app)
-          .patch("/api/users/icellusedkars")
-          .send({
-            avatar_url: "www.facebook.com/profile.jpg"
-          })
-          .expect(200)
-          .then(res => {
-            return request(app)
-              .get("/api/users/icellusedkars")
-              .expect(200)
-              .then(res => {
-                expect(res.body.user.username).to.equal("icellusedkars");
-                expect(res.body.user.avatar_url).to.equal(
-                  "www.facebook.com/profile.jpg"
-                );
-              });
-          });
-      });
-
-      it("PATCH 200 returns updated user with avatar_url AND name changed according to request body", () => {
-        return request(app)
-          .patch("/api/users/icellusedkars")
-          .send({
-            avatar_url: "www.facebook.com/profile.jpg",
-            name: "Samuel"
-          })
-          .expect(200)
-          .then(res => {
-            expect(res.body.user.username).to.equal("icellusedkars");
-            expect(res.body.user.name).to.equal("Samuel");
-            expect(res.body.user.avatar_url).to.equal(
-              "www.facebook.com/profile.jpg"
-            );
-          });
-      });
-      it("PATCH 404a returns error when username valid but no correspond.", () => {
-        return request(app)
-          .patch("/api/users/NON_EXI_USER")
-          .send({
-            avatar_url: "www.facebook.com/profile.jpg",
-            name: "Samuel"
-          })
-          .expect(404)
-          .then(res => {
-            expect(res.body.msg).to.equal(myErrMsgs["404a"]);
-          });
-      });
-      it("PATCH 200 returns unchanged object when empty request.", () => {
-        return request(app)
-          .patch("/api/users/icellusedkars")
-          .send({})
-          .expect(200)
-          .then(res => {
-            expect(res.body.user).to.eql({
-              username: "icellusedkars",
-              avatar_url:
-                "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4",
-              name: "sam"
-            });
-          });
-      });
-      it("PATCH 400a returns error when fields missing in request, eg mistyped keys.", () => {
-        return request(app)
-          .patch("/api/users/icellusedkars")
-          .send({ nameeeeeeeeeeeeeeee: "Samuel" })
-          .expect(400)
-          .then(res => {
-            expect(res.body.msg).to.equal(myErrMsgs["400a"]);
-          });
-      });
-      // it("PATCH 400d returns error when avatar_url fails url regex test.", () => {
-      //   return request(app)
-      //     .patch("/api/comments/1")
-      //     .send({
-      //       avatar_url: "/not.a.valid.url",
-      //       name: "Samuel"
-      //     })
-      //     .expect(400)
-      //     .then(res => {
-      //       expect(res.body.msg).to.equal(myErrMsgs["400d"]);
-      //     });
-      // });
-      it("PATCH 400a returns error when request contains other values.", () => {
-        return request(app)
-          .patch("/api/users/icellusedkars")
-          .send({
-            avatar_url: "www.facebook.com/profile.jpg",
-            name: "Samuel",
-            BADKEY: "NO NEED FOR THIS"
-          })
-          .expect(400)
-          .then(res => {
-            expect(res.body.msg).to.equal(myErrMsgs["400a"]);
-          });
-      });
-
-      it("GET 200 returns user by ID, which has username, avatar_url, and name.", () => {
+      it("GET 200 returns user by ID, which has username, avatar_url, and name. #fetchUsers", () => {
         return request(app)
           .get("/api/users/lurker")
           .expect(200)
@@ -417,6 +292,116 @@ describe("/api", () => {
           });
       });
     });
+    it("PATCH 200 returns updated user with name changed according to request body. #updateUserDetails", () => {
+      return request(app)
+        .patch("/api/users/icellusedkars")
+        .send({ name: "Samuel" })
+        .expect(200)
+        .then(res => {
+          return request(app)
+            .get("/api/users/icellusedkars")
+            .expect(200)
+            .then(res => {
+              expect(res.body.user.username).to.equal("icellusedkars");
+              expect(res.body.user.name).to.equal("Samuel");
+            });
+        });
+    });
+    it("PATCH 200 returns updated user with avatar_url changed according to request body", () => {
+      return request(app)
+        .patch("/api/users/icellusedkars")
+        .send({
+          avatar_url: "www.facebook.com/profile.jpg"
+        })
+        .expect(200)
+        .then(res => {
+          return request(app)
+            .get("/api/users/icellusedkars")
+            .expect(200)
+            .then(res => {
+              expect(res.body.user.username).to.equal("icellusedkars");
+              expect(res.body.user.avatar_url).to.equal(
+                "www.facebook.com/profile.jpg"
+              );
+            });
+        });
+    });
+    it("PATCH 200 returns updated user with avatar_url AND name changed according to request body", () => {
+      return request(app)
+        .patch("/api/users/icellusedkars")
+        .send({
+          avatar_url: "www.facebook.com/profile.jpg",
+          name: "Samuel"
+        })
+        .expect(200)
+        .then(res => {
+          expect(res.body.user.username).to.equal("icellusedkars");
+          expect(res.body.user.name).to.equal("Samuel");
+          expect(res.body.user.avatar_url).to.equal(
+            "www.facebook.com/profile.jpg"
+          );
+        });
+    });
+    it("PATCH 404a returns error when username valid but no correspond.", () => {
+      return request(app)
+        .patch("/api/users/NON_EXI_USER")
+        .send({
+          avatar_url: "www.facebook.com/profile.jpg",
+          name: "Samuel"
+        })
+        .expect(404)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["404a"]);
+        });
+    });
+    it("PATCH 200 returns unchanged object when empty request.", () => {
+      return request(app)
+        .patch("/api/users/icellusedkars")
+        .send({})
+        .expect(200)
+        .then(res => {
+          expect(res.body.user).to.eql({
+            username: "icellusedkars",
+            avatar_url:
+              "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4",
+            name: "sam"
+          });
+        });
+    });
+    it("PATCH 400a returns error when fields missing in request, eg mistyped keys.", () => {
+      return request(app)
+        .patch("/api/users/icellusedkars")
+        .send({ nameeeeeeeeeeeeeeee: "Samuel" })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+        });
+    });
+    // it("PATCH 400d returns error when avatar_url fails url regex test.", () => {
+    //   return request(app)
+    //     .patch("/api/comments/1")
+    //     .send({
+    //       avatar_url: "/not.a.valid.url",
+    //       name: "Samuel"
+    //     })
+    //     .expect(400)
+    //     .then(res => {
+    //       expect(res.body.msg).to.equal(myErrMsgs["400d"]);
+    //     });
+    // });
+    it("PATCH 400a returns error when request contains other values.", () => {
+      return request(app)
+        .patch("/api/users/icellusedkars")
+        .send({
+          avatar_url: "www.facebook.com/profile.jpg",
+          name: "Samuel",
+          BADKEY: "NO NEED FOR THIS"
+        })
+        .expect(400)
+        .then(res => {
+          expect(res.body.msg).to.equal(myErrMsgs["400a"]);
+        });
+    });
     it("Responds 405 if any other methods are used at this endpoint", () => {
       const url = "/api/users/:username";
       return Promise.all([request(app).del(url), request(app).post(url)]).then(
@@ -430,8 +415,8 @@ describe("/api", () => {
     });
   });
   describe("/articles", () => {
-    // Hey listen up! The function may only bring back articles with votes in the junction table, rather than all articles. We finna fix dat.
-    it.only("GET 200 returns an array of article objects, limited to 10 items by default, starting page 1 by default", () => {
+    // Hey listen up! The function may solely bring back articles with votes in the junction table, rather than all articles. We finna fix dat.
+    it("GET 200 returns an array of article objects, limited to 10 items by default, starting page 1 by default. #fetchArticleData", () => {
       return Promise.all([
         request(app)
           .patch("/api/articles/1")
@@ -453,7 +438,6 @@ describe("/api", () => {
           .get("/api/articles")
           .expect(200)
           .then(res => {
-            console.log(res.body.articles);
             expect(res.body.articles).to.be.an("Array");
             expect(res.body.articles.length).to.equal(10);
             expect(res.body.total_count).to.equal(12);
@@ -470,7 +454,6 @@ describe("/api", () => {
           expect(res.body.total_count).to.equal(5);
         });
     });
-
     it("GET 200 returns an array of article objects, limit specifiable", () => {
       return request(app)
         .get("/api/articles?limit=6")
@@ -481,7 +464,6 @@ describe("/api", () => {
           expect(res.body.total_count).to.equal(12);
         });
     });
-
     it("GET 200 returns an array of article objects, page and limit specifiable", () => {
       return request(app)
         .get("/api/articles?limit=6&p=1")
@@ -500,7 +482,6 @@ describe("/api", () => {
             });
         });
     });
-
     it("GET 200 returns an array of article objects, each having all the keys, BUT with body key excluded, AND with comment_count key added, sorted by created_at in descending by default.", () => {
       return request(app)
         .get("/api/articles")
@@ -541,13 +522,11 @@ describe("/api", () => {
           expect(res.body.articles[8].comment_count).to.equal(2);
         });
     });
-    it("onlyGET 200 articles array is sorted by any valid column from articles table, like topic.", () => {
+    it("GET 200 articles array is sorted by any valid column from articles table, like topic.", () => {
       return request(app)
         .get("/api/articles?sort_by=topic")
         .expect(200)
         .then(res => {
-          console.log("******************");
-          console.log(res.body.articles);
           expect(res.body.articles).to.be.an("Array");
           res.body.articles.forEach(article =>
             expect(article).to.have.all.keys([
@@ -565,12 +544,11 @@ describe("/api", () => {
           });
         });
     });
-    it("onlyGET 200 articles array is sorted by any valid column with order specifiable.", () => {
+    it("GET 200 articles array is sorted by any valid column with order specifiable.", () => {
       return request(app)
         .get("/api/articles?sort_by=votes&order=asc")
         .expect(200)
         .then(res => {
-          console.log(res.body.articles);
           expect(res.body.articles).to.be.an("Array");
           res.body.articles.forEach(article =>
             expect(article).to.have.all.keys([
@@ -736,76 +714,93 @@ describe("/api", () => {
           //expect(res.body.articles.length).to.equal(11) //Pagination could interfere with this.
         });
     });
-    it("GET 200 articles array filtered by user who upvoted them.", () => {
-      return request(app)
-        .patch("/api/articles/1")
-        .send({ inc_votes: 1, voting_user: "lurker" })
-        .expect(200)
-        .then(() => {
-          return request(app)
-            .patch("/api/articles/3")
-            .send({ inc_votes: 1, voting_user: "lurker" })
-            .expect(200)
-            .then(() => {
-              return request(app)
-                .get("/api/articles?voted_by=lurker")
-                .expect(200)
-                .then(res => {
-                  expect(res.body.articles).to.eql([
-                    {
-                      comment_count: 13,
-                      author: "butter_bridge",
-                      title: "Living in the shadow of a great man",
-                      article_id: 1,
-                      votes: 100,
-                      topic: "mitch",
-                      created_at: "2018-11-15T12:21:54.171Z"
-                    },
-                    {
-                      comment_count: 0,
-                      author: "icellusedkars",
-                      title: "Eight pug gifs that remind me of mitch",
-                      article_id: 3,
-                      votes: 0,
-                      topic: "mitch",
-                      created_at: "2010-11-17T12:21:54.171Z"
-                    }
-                  ]);
-                  //expect(res.body.articles.length).to.equal(11) //Pagination could interfere with this.
-                });
-            });
-        });
+    it("GET 200 articles array filtered by user who upvoted them. Specifically here we're testing whether when the upvotes are all sent through at once, does the function know not to count the same user's upvote more than once.", () => {
+      return Promise.all([
+        request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: 1, voting_user: "lurker" }),
+
+        request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: 1, voting_user: "butter_bridge" }),
+
+        request(app)
+          .patch("/api/articles/5")
+          .send({ inc_votes: 1, voting_user: "butter_bridge" }),
+
+        request(app)
+          .patch("/api/articles/3")
+          .send({ inc_votes: 1, voting_user: "lurker" }),
+
+        request(app)
+          .patch("/api/articles/3")
+          .send({ inc_votes: 1, voting_user: "lurker" })
+      ]).then(resArr => {
+        resArr.forEach(x => console.log(x.body.article));
+        return request(app)
+          .get("/api/articles?voted_by=lurker")
+          .expect(200)
+          .then(res => {
+            console.log(res.body.articles);
+            expect(res.body.articles.length).to.equal(2);
+            expect(res.body.articles).to.eql([
+              {
+                comment_count: 13,
+                author: "butter_bridge",
+                title: "Living in the shadow of a great man",
+                article_id: 1,
+                votes: 102,
+                topic: "mitch",
+                created_at: "2018-11-15T12:21:54.171Z"
+              },
+              {
+                comment_count: 0,
+                author: "icellusedkars",
+                title: "Eight pug gifs that remind me of mitch",
+                article_id: 3,
+                votes: 1,
+                topic: "mitch",
+                created_at: "2010-11-17T12:21:54.171Z"
+              }
+            ]);
+          });
+      });
     });
     it("GET 200 articles array filtered by user who downvoted them.", () => {
-      return request(app)
-        .patch("/api/articles/1")
-        .send({ inc_votes: 1, voting_user: "butter_bridge" })
-        .expect(200)
-        .then(() => {
-          return request(app)
-            .patch("/api/articles/3")
-            .send({ inc_votes: -1, voting_user: "butter_bridge" })
-            .expect(200)
-            .then(() => {
-              return request(app)
-                .get("/api/articles?voted_by=butter_bridge&vote_direction=down")
-                .expect(200)
-                .then(res => {
-                  expect(res.body.articles).to.eql([
-                    {
-                      comment_count: 0,
-                      author: "icellusedkars",
-                      title: "Eight pug gifs that remind me of mitch",
-                      article_id: 3,
-                      votes: 0,
-                      topic: "mitch",
-                      created_at: "2010-11-17T12:21:54.171Z"
-                    }
-                  ]);
-                  //expect(res.body.articles.length).to.equal(11) //Pagination could interfere with this.
-                });
-            });
-        });
+      return Promise.all([
+        request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: 1, voting_user: "butter_bridge" }),
+
+        request(app)
+          .patch("/api/articles/3")
+          .send({ inc_votes: -1, voting_user: "butter_bridge" }),
+
+        request(app)
+          .patch("/api/articles/3")
+          .send({ inc_votes: -1, voting_user: "lurker" }),
+
+        request(app)
+          .patch("/api/articles/4")
+          .send({ inc_votes: -1, voting_user: "lurker" })
+      ]).then(() => {
+        return request(app)
+          .get("/api/articles?voted_by=butter_bridge&vote_direction=down")
+          .expect(200)
+          .then(res => {
+            expect(res.body.articles).to.eql([
+              {
+                comment_count: 0,
+                author: "icellusedkars",
+                title: "Eight pug gifs that remind me of mitch",
+                article_id: 3,
+                votes: -2,
+                topic: "mitch",
+                created_at: "2010-11-17T12:21:54.171Z"
+              }
+            ]);
+          });
+      });
     });
     it("GET 200 empty array if nothing matches that voted_by ?query.", () => {
       return request(app)
@@ -876,8 +871,7 @@ describe("/api", () => {
         }
       );
     });
-
-    it("POST 201 responds with created article.", () => {
+    it("POST 201 responds with created article. #createNewArticle", () => {
       return request(app)
         .post("/api/articles")
         .send({
@@ -904,7 +898,6 @@ describe("/api", () => {
           expect(res.body.article.votes).to.equal(0);
         });
     });
-
     it("POST 201 responds with created article, including can specify how many votes.", () => {
       return request(app)
         .post("/api/articles")
@@ -933,7 +926,6 @@ describe("/api", () => {
           expect(res.body.article.votes).to.equal(12);
         });
     });
-
     it("POST 404c responds error if topic specified in request body not exist.", () => {
       return request(app)
         .post("/api/articles")
@@ -949,7 +941,6 @@ describe("/api", () => {
           expect(res.body.msg).to.eql(myErrMsgs["404c"]);
         });
     });
-
     it("POST 404c responds error if author specified in request body not exist", () => {
       return request(app)
         .post("/api/articles")
@@ -965,8 +956,7 @@ describe("/api", () => {
           expect(res.body.msg).to.eql(myErrMsgs["404c"]);
         });
     });
-
-    it("POST: 400a responds with error when missing fields", () => {
+    it("POST 400a responds with error when missing fields", () => {
       return request(app)
         .post("/api/articles")
         .send({})
@@ -975,8 +965,7 @@ describe("/api", () => {
           expect(res.body.msg).to.eql(myErrMsgs["400a"]);
         });
     });
-
-    it("POST: 400a responds with error when failing schema validation", () => {
+    it("POST 400a responds with error when failing schema validation", () => {
       return request(app)
         .post("/api/articles")
         .send({
@@ -990,7 +979,7 @@ describe("/api", () => {
           expect(res.body.msg).to.equal(myErrMsgs["400a"]);
         });
     });
-    it("POST: 400a responds with error when failing schema validation due to too long field", () => {
+    it("POST 400a responds with error when failing schema validation due to too long field", () => {
       return request(app)
         .post("/api/articles")
         .send({
@@ -1046,9 +1035,8 @@ describe("/api", () => {
         }
       );
     });
-
     describe("/:articleid", () => {
-      it("GET 200 returns article object where vote is calculated by upvotes from users, add to base vote level from data file, limited to 10 items by default, starting page 1 by default", () => {
+      it("GET 200 returns article object where vote is calculated by upvotes from users, add to base vote level from data file, limited to 10 items by default, starting page 1 by default. #fetchArticleData", () => {
         return Promise.all([
           request(app)
             .patch("/api/articles/1")
@@ -1076,122 +1064,71 @@ describe("/api", () => {
             });
         });
       });
-
       it("GET 200 returns article object where vote is calculated by downvotes and upvotes from users, add to base vote level from data file, limited to 10 items by default, starting page 1 by default", () => {
-        return request(app)
-          .patch("/api/articles/2")
-          .send({ inc_votes: -1, voting_user: "butter_bridge" })
-          .expect(200)
-          .then(res => {
-            return request(app)
-              .patch("/api/articles/2")
-              .send({ inc_votes: 1, voting_user: "lurker" })
-              .expect(200)
-              .then(res => {
-                return request(app)
-                  .patch("/api/articles/2")
-                  .send({ inc_votes: -1, voting_user: "icellusedkars" })
-                  .expect(200)
-                  .then(res => {
-                    return request(app)
-                      .get("/api/articles/2")
-                      .expect(200)
-                      .then(res => {
-                        expect(res.body.article).to.be.an("Object");
-                        expect(res.body.article.votes).to.equal(-1);
-                      });
-                  });
-              });
-          });
-      });
+        return Promise.all([
+          request(app)
+            .patch("/api/articles/2")
+            .send({ inc_votes: -1, voting_user: "butter_bridge" }),
 
-      it("GET 200 returns article object where vote is calculated by downvotes and upvotes, and not interfered with by votes on other articles", () => {
-        return request(app)
-          .patch("/api/articles/2")
-          .send({ inc_votes: 1, voting_user: "butter_bridge" })
-          .expect(200)
-          .then(res => {
-            return request(app)
-              .patch("/api/articles/2")
-              .send({ inc_votes: 1, voting_user: "lurker" })
-              .expect(200)
-              .then(res => {
-                return request(app)
-                  .patch("/api/articles/4")
-                  .send({ inc_votes: 1, voting_user: "icellusedkars" })
-                  .expect(200)
-                  .then(res => {
-                    return request(app)
-                      .get("/api/articles/2")
-                      .expect(200)
-                      .then(res => {
-                        expect(res.body.article).to.be.an("Object");
-                        expect(res.body.article.votes).to.equal(2);
-                      });
-                  });
-              });
-          });
-      });
+          request(app)
+            .patch("/api/articles/2")
+            .send({ inc_votes: 1, voting_user: "lurker" }),
 
-      it("DELETE 204 all comments associated with that article are deleted too!", () => {
-        return request(app)
-          .del("/api/articles/1")
-          .expect(204)
-          .then(() => {
-            return request(app)
-              .get("/api/articles/1/comments")
-              .expect(404); // for id valid but nonexistent!
-          });
-      });
-
-      it("DELETE 204 returns no body after sucessful deletion", () => {
-        return request(app)
-          .del("/api/articles/3")
-          .expect(204)
-          .then(res => {
-            expect(res.body).to.eql({});
-          });
-      });
-      it("DELETE 204   It was... definitely deleted, right?", () => {
-        return request(app)
-          .del("/api/articles/4")
-          .expect(204)
-          .then(res => {
-            return request(app)
-              .patch("/api/articles/4")
-              .send({ inc_votes: 1000 })
-              .expect(404)
-              .then(res => {
-                expect(res.body.msg).to.equal(myErrMsgs["404a"]);
-              });
-          });
-      });
-      it("DELETE 404a if id valid but nonexistent.", () => {
-        return request(app)
-          .del("/api/articles/6666")
-          .expect(404)
-          .then(res => {
-            expect(res.body.msg).to.equal(myErrMsgs["404a"]);
-          });
-      });
-      it("DELETE 400b if invalid id.", () => {
-        return request(app)
-          .del("/api/articles/INVALID_ID")
-          .expect(400)
-          .then(res => {
-            expect(res.body.msg).to.equal(myErrMsgs["400b"]);
-          });
-      });
-      it("Responds 405 if any other methods are used at this endpoint", () => {
-        const url = "/api/articles/2";
-        return Promise.all([request(app).post(url)]).then(resArr => {
-          resArr.forEach(response => {
-            expect(405);
-            expect(response.body.msg).to.equal(myErrMsgs["405"]);
-          });
+          request(app)
+            .patch("/api/articles/2")
+            .send({ inc_votes: -1, voting_user: "icellusedkars" })
+        ]).then(res => {
+          return request(app)
+            .get("/api/articles/2")
+            .expect(200)
+            .then(res => {
+              expect(res.body.article).to.be.an("Object");
+              expect(res.body.article.votes).to.equal(-1);
+            });
         });
       });
+      it("GET 200 returns article object where vote is calculated by downvotes and upvotes, and not interfered with by votes on other articles", () => {
+        return Promise.all([
+          request(app)
+            .patch("/api/articles/2")
+            .send({ inc_votes: 1, voting_user: "butter_bridge" }),
 
+          request(app)
+            .patch("/api/articles/2")
+            .send({ inc_votes: 1, voting_user: "lurker" }),
+
+          request(app)
+            .patch("/api/articles/4")
+            .send({ inc_votes: 1, voting_user: "icellusedkars" })
+        ]).then(res => {
+          return request(app)
+            .get("/api/articles/2")
+            .expect(200)
+            .then(res => {
+              expect(res.body.article).to.be.an("Object");
+              expect(res.body.article.votes).to.equal(2);
+            });
+        });
+      });
+      it("GET 200 returns article by id, where comment_count is 0, not null, if no comments yet.", () => {
+        return request(app)
+          .get("/api/articles/8")
+          .expect(200)
+          .then(res => {
+            expect(res.body.article).to.be.an("Object");
+            expect(res.body.article.comment_count).to.equal(0);
+            expect(res.body.article).to.have.all.keys([
+              "author",
+              "title",
+              "article_id",
+              "topic",
+              "body",
+              "created_at",
+              "votes",
+              "comment_count"
+            ]);
+          });
+      });
       it("GET 200 returns article by id, with the right properties, including comment_count.", () => {
         return request(app)
           .get("/api/articles/5")
@@ -1235,8 +1172,7 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["400b"]);
           });
       });
-
-      it("PATCH 200 Adds row to junction table re re user adding a vote to an article.", () => {
+      it("PATCH 200 Adds row to junction table re user adding a vote to an article. #addVoteToArticleByUser", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: 1, voting_user: "butter_bridge" })
@@ -1249,7 +1185,6 @@ describe("/api", () => {
             });
           });
       });
-
       it("PATCH 200 Adds row to junction table re user adding a negative vote to an article.", () => {
         return request(app)
           .patch("/api/articles/1")
@@ -1263,28 +1198,24 @@ describe("/api", () => {
             });
           });
       });
-
       it("PATCH 404 You cannot upvote from nonexistent user.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: -1, voting_user: "NON_EXI_USER" })
           .expect(404); // What is best error message?
       });
-
       it("PATCH 400 User cannot submit a number greater 1 as a vote.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: 2, voting_user: "butter_bridge" })
           .expect(400); // What is best error message?
       });
-
       it("PATCH 400 User cannot submit a number less than -1 as a vote.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: -2, voting_user: "butter_bridge" })
           .expect(400); // What is best error message?
       });
-
       it("PATCH 400 User cannot upvote same article more than once.", () => {
         return request(app)
           .patch("/api/articles/1")
@@ -1297,7 +1228,6 @@ describe("/api", () => {
               .expect(400); // What is best error message?
           });
       });
-
       it("PATCH 400 User cannot downvote same article more than once.", () => {
         return request(app)
           .patch("/api/articles/1")
@@ -1310,7 +1240,6 @@ describe("/api", () => {
               .expect(400); // What is best error message?
           });
       });
-
       it("PATCH 400 User can negate their downvote with a subsequent upvote and then upvote again.", () => {
         return request(app)
           .patch("/api/articles/1")
@@ -1335,7 +1264,6 @@ describe("/api", () => {
               });
           });
       });
-
       it("PATCH 400 User can negate their upvote with a subsequent downvote and then downvote again.", () => {
         return request(app)
           .patch("/api/articles/1")
@@ -1360,7 +1288,6 @@ describe("/api", () => {
               });
           });
       });
-
       it("PATCH 400 User can negate their upvote with a subsequent downvote and then upvote again.", () => {
         return request(app)
           .patch("/api/articles/1")
@@ -1385,8 +1312,7 @@ describe("/api", () => {
               });
           });
       });
-
-      it("PATCH 200 Returns updated article body.", () => {
+      it("PATCH 200 Can update body. Returns updated article. #updateArticleTitleTopicBodyOrAuthor", () => {
         return request(app)
           .patch("/api/articles/4")
           .send({ body: "Get my green pak choi, squire!" })
@@ -1407,7 +1333,33 @@ describe("/api", () => {
             ]);
           });
       });
-
+      it("PATCH 200 Can update title, and/or body, and/or author. Returns updated article.", () => {
+        return request(app)
+          .patch("/api/articles/4")
+          .send({
+            author: "butter_bridge",
+            title: "Andrew Wyeth paintings",
+            body: "The woman is alone in the field."
+          })
+          .expect(200)
+          .then(res => {
+            expect(res.body.article.body).to.equal(
+              "The woman is alone in the field."
+            );
+            expect(res.body.article.article_id).to.equal(4);
+            expect(res.body.article.author).to.equal("butter_bridge");
+            expect(res.body.article.title).to.equal("Andrew Wyeth paintings");
+            expect(res.body.article).to.have.all.keys([
+              "article_id",
+              "title",
+              "topic",
+              "author",
+              "body",
+              "created_at",
+              "votes"
+            ]);
+          });
+      });
       it("PATCH 200 Returns updated article title.", () => {
         return request(app)
           .patch("/api/articles/5")
@@ -1451,7 +1403,6 @@ describe("/api", () => {
             ]);
           });
       });
-
       it("PATCH 404c Returns error if try to update author to non existing author.", () => {
         return request(app)
           .patch("/api/articles/2")
@@ -1461,8 +1412,7 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["404c"]);
           });
       });
-
-      it("PATCH 200 ADMIN returns updated article with votes incremented according to request body", () => {
+      it("PATCH 200 ADMIN returns updated article with votes incremented according to request body. #updateArticleVotes", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: 1000 })
@@ -1498,7 +1448,6 @@ describe("/api", () => {
             ]);
           });
       });
-
       it("PATCH 200 ADMIN returns unchanged item when empty request.", () => {
         return request(app)
           .patch("/api/articles/1")
@@ -1517,7 +1466,6 @@ describe("/api", () => {
             ]);
           });
       });
-
       it("PATCH 404a ADMIN returns error when id valid but no correspond.", () => {
         return request(app)
           .patch("/api/articles/6666")
@@ -1572,6 +1520,54 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["400a"]);
           });
       });
+      it("DELETE 204 all comments associated with that article are deleted too! #deleteArticleByID", () => {
+        return request(app)
+          .del("/api/articles/1")
+          .expect(204)
+          .then(() => {
+            return request(app)
+              .get("/api/articles/1/comments")
+              .expect(404); // for id valid but nonexistent!
+          });
+      });
+      it("DELETE 204 returns no body after sucessful deletion", () => {
+        return request(app)
+          .del("/api/articles/3")
+          .expect(204)
+          .then(res => {
+            expect(res.body).to.eql({});
+          });
+      });
+      it("DELETE 204   It was... definitely deleted, right?", () => {
+        return request(app)
+          .del("/api/articles/4")
+          .expect(204)
+          .then(res => {
+            return request(app)
+              .patch("/api/articles/4")
+              .send({ inc_votes: 1000 })
+              .expect(404)
+              .then(res => {
+                expect(res.body.msg).to.equal(myErrMsgs["404a"]);
+              });
+          });
+      });
+      it("DELETE 404a if id valid but nonexistent.", () => {
+        return request(app)
+          .del("/api/articles/6666")
+          .expect(404)
+          .then(res => {
+            expect(res.body.msg).to.equal(myErrMsgs["404a"]);
+          });
+      });
+      it("DELETE 400b if invalid id.", () => {
+        return request(app)
+          .del("/api/articles/INVALID_ID")
+          .expect(400)
+          .then(res => {
+            expect(res.body.msg).to.equal(myErrMsgs["400b"]);
+          });
+      });
       it("Responds 405 if any other methods are used at this endpoint", () => {
         const url = "/api/articles/3";
         return Promise.all([request(app).post(url)]).then(resArr => {
@@ -1581,9 +1577,17 @@ describe("/api", () => {
           });
         });
       });
-
+      it("Responds 405 if any other methods are used at this endpoint", () => {
+        const url = "/api/articles/2";
+        return Promise.all([request(app).post(url)]).then(resArr => {
+          resArr.forEach(response => {
+            expect(405);
+            expect(response.body.msg).to.equal(myErrMsgs["405"]);
+          });
+        });
+      });
       describe("/comments", () => {
-        it("GET 200 returns an array of comment objects, limited to 10 items by default, starting page 1 by default", () => {
+        it("GET 200 returns an array of comment objects, limited to 10 items by default, starting page 1 by default. #fetchCommentsByArticle", () => {
           return request(app)
             .get("/api/articles/1/comments")
             .expect(200)
@@ -1593,7 +1597,6 @@ describe("/api", () => {
               expect(res.body.total_count).to.equal(13);
             });
         });
-
         it("GET 200 returns an array of comment objects, page and limit specifiable", () => {
           return request(app)
             .get("/api/articles/1/comments?limit=6")
@@ -1604,7 +1607,6 @@ describe("/api", () => {
               expect(res.body.total_count).to.equal(13);
             });
         });
-
         it("GET 200 returns an array of comment objects, page and limit specifiable", () => {
           return request(app)
             .get("/api/articles/1/comments?limit=6&p=1")
@@ -1623,7 +1625,6 @@ describe("/api", () => {
                 });
             });
         });
-
         it("GET 200 comments by article ID, each of which have all right keys, and are sorted by created_at in descending by default.", () => {
           return request(app)
             .get("/api/articles/5/comments")
@@ -1713,13 +1714,11 @@ describe("/api", () => {
               expect(res.body.msg).to.equal(myErrMsgs["400b"]);
             });
         });
-
-        it("POST 201 responds with created comment.", () => {
+        it("POST 201 responds with created comment. #createNewCommentOnArticle", () => {
           return request(app)
             .post("/api/articles/5/comments")
             .send({ username: "butter_bridge", body: "I like butter" })
             .expect(201)
-
             .then(res => {
               delete res.body.comment.created_at;
               expect(res.body.comment).to.eql({
@@ -1741,7 +1740,7 @@ describe("/api", () => {
               expect(res.body.msg).to.eql(myErrMsgs["404c"]);
             });
         });
-        it("POST: 400a responds with error when missing fields", () => {
+        it("POST 400a responds with error when missing fields", () => {
           return request(app)
             .post("/api/articles/5/comments")
             .send({})
@@ -1751,7 +1750,7 @@ describe("/api", () => {
             });
         });
 
-        it("POST: 400a responds with error when failing schema validation", () => {
+        it("POST 400a responds with error when failing schema validation", () => {
           return request(app)
             .post("/api/articles/5/comments")
             .send({
@@ -1812,7 +1811,7 @@ describe("/api", () => {
 
   describe("/comments", () => {
     describe("/:comment_id", () => {
-      it("GET 200 returns comment by ID.", () => {
+      it("GET 200 returns comment by ID. #fetchCommentByID", () => {
         return request(app)
           .get("/api/comments/5")
           .expect(200)
@@ -1845,7 +1844,7 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["400b"]);
           });
       });
-      it("PATCH 200 returns updated comment with body changed according to request body", () => {
+      it("PATCH 200 returns updated comment with body changed according to request body. #updateCommentDetails", () => {
         return request(app)
           .patch("/api/comments/5")
           .send({ body: "Reading this cured my emphesema." })
@@ -1862,7 +1861,7 @@ describe("/api", () => {
               });
           });
       });
-      it("PATCH 200 returns updated comment with body AND votes changed according to request body", () => {
+      it("PATCH 200 ADMIN returns updated comment with body AND votes changed according to request body", () => {
         return request(app)
           .patch("/api/comments/2")
           .send({
@@ -1883,8 +1882,7 @@ describe("/api", () => {
               });
           });
       });
-
-      it("PATCH 200 returns updated comment with votes incremented according to request body", () => {
+      it("PATCH 200 ADMIN returns updated comment with votes incremented according to request body", () => {
         return request(app)
           .patch("/api/comments/2")
           .send({ inc_votes: 1000 })
@@ -1909,7 +1907,7 @@ describe("/api", () => {
         //     expect(res.body.comment.votes).to.equal(1014)
         // })
       });
-      it("PATCH 200 returns updated comment with votes decremented according to request body", () => {
+      it("PATCH 200 ADMIN returns updated comment with votes decremented according to request body", () => {
         return request(app)
           .patch("/api/comments/2")
           .send({ inc_votes: -514 })
@@ -1995,8 +1993,7 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["400a"]);
           });
       });
-
-      it("DELETE 204 returns no body after sucessful deletion", () => {
+      it("DELETE 204 returns no body after sucessful deletion. #deleteCommentByID", () => {
         return request(app)
           .del("/api/comments/3")
           .expect(204)
@@ -2034,7 +2031,7 @@ describe("/api", () => {
             expect(res.body.msg).to.equal(myErrMsgs["400b"]);
           });
       });
-      it("]Responds 405 if any other methods are used at this endpoint", () => {
+      it("Responds 405 if any other methods are used at this endpoint", () => {
         const url = "/api/comments/2";
         return Promise.all([request(app).post(url)]).then(resArr => {
           resArr.forEach(response => {

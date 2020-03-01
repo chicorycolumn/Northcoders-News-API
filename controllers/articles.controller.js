@@ -50,7 +50,7 @@ exports.getArticleByID = (req, res, next) => {
       res.send({ article });
     })
     .catch(err => {
-      console.log(err);
+      //console.log(err);
       next(err);
     });
 };
