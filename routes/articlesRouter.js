@@ -7,7 +7,8 @@ const {
   getCommentsByArticle,
   postNewArticle,
   dropArticleByID,
-  patchArticleDetails
+  patchArticleDetails,
+  getArticleVotesJunctionTable
 } = require("../controllers/articles.controller");
 const { handle405s } = require("../errors/errors");
 
@@ -15,6 +16,11 @@ articlesRouter
   .route("/")
   .get(getArticles)
   .post(postNewArticle)
+  .all(handle405s);
+
+articlesRouter
+  .route("/votes")
+  .get(getArticleVotesJunctionTable)
   .all(handle405s);
 
 articlesRouter

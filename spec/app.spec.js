@@ -714,7 +714,43 @@ describe("/api", () => {
           //expect(res.body.articles.length).to.equal(11) //Pagination could interfere with this.
         });
     });
-    it("GET 200 articles array filtered by user who upvoted them. Specifically here we're testing whether when the upvotes are all sent through at once, does the function know not to count the same user's upvote more than once.", () => {
+    it("GET 200 articles array filtered by user who downvoted them.", () => {
+      return Promise.all([
+        request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: 1, voting_user: "butter_bridge" }),
+
+        request(app)
+          .patch("/api/articles/3")
+          .send({ inc_votes: -1, voting_user: "butter_bridge" }),
+
+        request(app)
+          .patch("/api/articles/3")
+          .send({ inc_votes: -1, voting_user: "lurker" }),
+
+        request(app)
+          .patch("/api/articles/4")
+          .send({ inc_votes: -1, voting_user: "lurker" })
+      ]).then(() => {
+        return request(app)
+          .get("/api/articles?voted_by=butter_bridge&vote_direction=down")
+          .expect(200)
+          .then(res => {
+            expect(res.body.articles).to.eql([
+              {
+                comment_count: 0,
+                author: "icellusedkars",
+                title: "Eight pug gifs that remind me of mitch",
+                article_id: 3,
+                votes: -2,
+                topic: "mitch",
+                created_at: "2010-11-17T12:21:54.171Z"
+              }
+            ]);
+          });
+      });
+    });
+    xit("GET 200 When the upvotes are all sent through at once, does the function know not to count the same user's upvote more than once?", () => {
       return Promise.all([
         request(app)
           .patch("/api/articles/1")
@@ -759,42 +795,6 @@ describe("/api", () => {
                 title: "Eight pug gifs that remind me of mitch",
                 article_id: 3,
                 votes: 1,
-                topic: "mitch",
-                created_at: "2010-11-17T12:21:54.171Z"
-              }
-            ]);
-          });
-      });
-    });
-    it("GET 200 articles array filtered by user who downvoted them.", () => {
-      return Promise.all([
-        request(app)
-          .patch("/api/articles/1")
-          .send({ inc_votes: 1, voting_user: "butter_bridge" }),
-
-        request(app)
-          .patch("/api/articles/3")
-          .send({ inc_votes: -1, voting_user: "butter_bridge" }),
-
-        request(app)
-          .patch("/api/articles/3")
-          .send({ inc_votes: -1, voting_user: "lurker" }),
-
-        request(app)
-          .patch("/api/articles/4")
-          .send({ inc_votes: -1, voting_user: "lurker" })
-      ]).then(() => {
-        return request(app)
-          .get("/api/articles?voted_by=butter_bridge&vote_direction=down")
-          .expect(200)
-          .then(res => {
-            expect(res.body.articles).to.eql([
-              {
-                comment_count: 0,
-                author: "icellusedkars",
-                title: "Eight pug gifs that remind me of mitch",
-                article_id: 3,
-                votes: -2,
                 topic: "mitch",
                 created_at: "2010-11-17T12:21:54.171Z"
               }
@@ -1035,6 +1035,116 @@ describe("/api", () => {
         }
       );
     });
+    describe("/votes", () => {
+      xit("GET 200 ADMIN returns junction table of article votes. #fetchArticleVotesJunctionTable", () => {
+        return Promise.all([
+          request(app)
+            .patch("/api/articles/2")
+            .send({ inc_votes: -1, voting_user: "butter_bridge" }),
+
+          request(app)
+            .patch("/api/articles/4")
+            .send({ inc_votes: 1, voting_user: "lurker" }),
+
+          request(app)
+            .patch("/api/articles/6")
+            .send({ inc_votes: -1, voting_user: "icellusedkars" }),
+
+          request(app)
+            .patch("/api/articles/6")
+            .send({ inc_votes: -1, voting_user: "butter_bridge" })
+        ]).then(res => {
+          return request(app)
+            .get("/api/articles/votes")
+            .then(res => {
+              chai.use(require("chai-like"));
+              chai.use(require("chai-things"));
+              expect(res.body.article_votes_junction.length).to.equal(4);
+              expect(res.body.article_votes_junction)
+                .to.be.an("array")
+                .that.includes.something.like({
+                  voting_user: "butter_bridge",
+                  article_id: 2,
+                  inc_votes: -1
+                });
+              expect(res.body.article_votes_junction)
+                .to.be.an("array")
+                .that.includes.something.like({
+                  voting_user: "lurker",
+                  article_id: 4,
+                  inc_votes: 1
+                });
+              expect(res.body.article_votes_junction)
+                .to.be.an("array")
+                .that.includes.something.like({
+                  voting_user: "icellusedkars",
+                  article_id: 6,
+                  inc_votes: -1
+                });
+              expect(res.body.article_votes_junction)
+                .to.be.an("array")
+                .that.includes.something.like({
+                  voting_user: "butter_bridge",
+                  article_id: 6,
+                  inc_votes: -1
+                });
+              chai.use(require("sams-chai-sorted"));
+            });
+        });
+      });
+      xit("GET 200 ADMIN returns junction table of article votes, DELETE 204 all votes associated with that article are deleted too! #deleteArticleByID, #fetchArticleVotesJunctionTable", () => {
+        return Promise.all([
+          request(app)
+            .patch("/api/articles/2")
+            .send({ inc_votes: -1, voting_user: "butter_bridge" }),
+
+          request(app)
+            .patch("/api/articles/4")
+            .send({ inc_votes: 1, voting_user: "lurker" }),
+
+          request(app)
+            .patch("/api/articles/6")
+            .send({ inc_votes: -1, voting_user: "icellusedkars" }),
+
+          request(app)
+            .patch("/api/articles/6")
+            .send({ inc_votes: -1, voting_user: "butter_bridge" })
+        ])
+          .then(() => {
+            return request(app)
+              .del("/api/articles/6")
+              .expect(204);
+          })
+
+          .then(res => {
+            return request(app)
+              .get("/api/articles/votes")
+              .then(res => {
+                chai.use(require("chai-like"));
+                chai.use(require("chai-things"));
+
+                expect(res.body.article_votes_junction.length).to.equal(2);
+
+                expect(res.body.article_votes_junction)
+                  .to.be.an("array")
+                  .that.includes.something.like({
+                    voting_user: "lurker",
+                    article_id: 4,
+                    inc_votes: 1
+                  });
+
+                expect(res.body.article_votes_junction)
+                  .to.be.an("array")
+                  .that.includes.something.like({
+                    voting_user: "butter_bridge",
+                    article_id: 2,
+                    inc_votes: -1
+                  });
+                chai.use(require("sams-chai-sorted"));
+              });
+          });
+      });
+    });
     describe("/:articleid", () => {
       it("GET 200 returns article object where vote is calculated by upvotes from users, add to base vote level from data file, limited to 10 items by default, starting page 1 by default. #fetchArticleData", () => {
         return Promise.all([
@@ -1240,7 +1350,7 @@ describe("/api", () => {
               .expect(400); // What is best error message?
           });
       });
-      it("PATCH 400 User can negate their downvote with a subsequent upvote and then upvote again.", () => {
+      it("PATCH 400 User can negate their downvote with a subsequent upvote and then upvote again, but not again again.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: -1, voting_user: "butter_bridge" })
@@ -1264,7 +1374,7 @@ describe("/api", () => {
               });
           });
       });
-      it("PATCH 400 User can negate their upvote with a subsequent downvote and then downvote again.", () => {
+      it("PATCH 400 User can negate their upvote with a subsequent downvote and then downvote again, but not again again.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: 1, voting_user: "butter_bridge" })
@@ -1288,7 +1398,7 @@ describe("/api", () => {
               });
           });
       });
-      it("PATCH 400 User can negate their upvote with a subsequent downvote and then upvote again.", () => {
+      it("PATCH 400 User can negate their upvote with a subsequent downvote and then upvote again, but not again again.", () => {
         return request(app)
           .patch("/api/articles/1")
           .send({ inc_votes: 1, voting_user: "butter_bridge" })

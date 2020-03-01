@@ -6,8 +6,17 @@ const {
   createNewArticle,
   deleteArticleByID,
   addVoteToArticleByUser,
-  updateArticleDetails
+  updateArticleDetails,
+  fetchArticleVotesJunctionTable
 } = require("../models/articles.model");
+
+exports.getArticleVotesJunctionTable = (req, res, next) => {
+  fetchArticleVotesJunctionTable()
+    .then(article_votes_junction => {
+      res.send({ article_votes_junction });
+    })
+    .catch(err => next(err));
+};
 
 exports.getArticles = (req, res, next) => {
   fetchArticleData(req.params, req.query)
